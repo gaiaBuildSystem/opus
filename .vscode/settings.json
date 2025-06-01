@@ -1,0 +1,13 @@
+{
+    "window.title": "Opus - PhobOS Customization",
+    "workbench.sideBar.location": "left",
+    "pylsp.executable": "/opt/venv/bin/pylsp",
+    "python.defaultInterpreterPath": "/opt/venv/bin/python",
+    "mypy-type-checker.ignorePatterns": [
+        "*.xsh",
+        "**/*.xsh"
+    ],
+    "yaml.schemas": {
+        "./src/schema/custom.json": "*/custom.yaml"
+    },
+}

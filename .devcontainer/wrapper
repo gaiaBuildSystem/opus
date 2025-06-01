@@ -1,0 +1,17 @@
+#!/bin/bash
+
+# if the opus env var OPUS_CLI is not set
+if [ -z "$OPUS_CLI" ]; then
+    touch /home/phobos/.xonshrc
+    chmod 777 /home/phobos/.xonshrc
+
+    chown -R phobos:phobos /home/phobos/.xonshrc
+    chown -R phobos:phobos /project
+
+    # execute the arguments as the user phobos
+    # in the virtual environment
+    sudo -u phobos -i /bin/bash --login -c "source /opt/venv/bin/activate && $@"
+else
+    # run the opus command with the provided arguments
+    sudo -u phobos -i /bin/bash --login -c "cd /project && source /opt/venv/bin/activate && ./main.xsh $@"
+fi

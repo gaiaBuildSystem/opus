@@ -1,0 +1,64 @@
+
+image:
+  machine: rpi5b
+  version: 0.0.0
+  increase: 40%
+  debug:
+    enable: true
+    device:
+      ip: 192.168.0.22
+      port: 22
+  apt:
+    install:
+      - libgpiod-dev
+    install_debug:
+      - gdb
+      - gdbserver
+      - strace
+      - ltrace
+    remove:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - gnupg
+      - lsb-release
+  rootfs:
+    merge:
+      - ./rootfs/lib/modules
+      - ./rootfs/boot
+    remove:
+      - /lib/modules/5.15.0-1011-raspi/kernel/drivers/gpu/drm/arm/mali_kbase.ko
+      - /lib/modules/5.15.0-1011-raspi/kernel/drivers/gpu/drm/arm/mali_kbase_debugfs.ko
+      - /lib/modules/5.15.0-1011-raspi/kernel/drivers/gpu/drm/arm/mali_kbase_debugfs_mmu.ko
+      - /boot/overlays/rockchip-rk3588s-evb.dtb
+      - /boot/overlays/rk3588-evb.dtb
+    copy:
+      - ./build-arm/app:/usr/app/app
+    chroot:
+      - ./scripts/check-boot.sh
+  services:
+    enable:
+      - systemd-timesyncd.service
+    disable:
+      - avahi-daemon.service
+  kernel:
+    cmdline:
+      - console=serial0,115200
+      - console=tty1
+      - root=/dev/mmcblk0p2
+      - rootfstype=ext4
+      - rootwait
+      - fsck.repair=yes
+      - rw
+    devicetree:
+      - ./rockchip-rk3588s-evb.dts
+      - ./rk3588-evb.dts
+    devicetree_overlays:
+      - ./fs/boot/overlays/rockchip-rk3588s-evb.dtso
+      - ./fs/boot/overlays/rk3588-evb.dtso
+    config:
+      CONFIG_USB: m
+    out_of_tree_modules:
+      - ./modules/rockchip-rk3588s-evb
+  security:
+    hardened: true

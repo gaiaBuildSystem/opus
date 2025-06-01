@@ -1,0 +1,15 @@
+colorama
+pygments
+prompt-toolkit
+setproctitle
+xonsh
+torizon-templates-utils
+pylsp-rope
+python-lsp-server
+debugpy
+distro
+shtab
+pyyaml
+jsonschema
+psutil
+GitPython

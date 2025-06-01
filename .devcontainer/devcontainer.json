@@ -1,0 +1,49 @@
+
+{
+	"name": "opus",
+	"build": {
+        "context": "..",
+		"dockerfile": "./Containerfile",
+		"args": {
+			"BUILDKIT_INLINE_CACHE": "0",
+			// FIXME: change here to your docker group id
+			// getent group docker
+			"GID": "996"
+		}
+	},
+
+	"customizations": {
+		"vscode": {
+			"settings": {
+				"terminal.integrated.defaultProfile.linux": "bash",
+				"python.defaultInterpreterPath": "/opt/venv/bin/python3"
+			},
+			"extensions": [
+				"ms-python.mypy-type-checker",
+				"ms-azuretools.vscode-containers",
+				"docker.docker",
+				"streetsidesoftware.code-spell-checker",
+				"redhat.vscode-yaml",
+				"ms-python.python",
+				"ms-python.pylint",
+				"eamodio.gitlens",
+				"microhobby.taskrunnercodeplus",
+				"microhobby.vscode-tasks-label",
+				"microhobby.xonsh2"
+			]
+		}
+	},
+
+	"privileged": true,
+	"runArgs": [
+		"--net=host"
+	],
+
+	"containerUser": "phobos",
+
+	"mounts":
+	[
+		"source=${localWorkspaceFolder},target=/project,type=bind",
+		"source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
+	]
+}

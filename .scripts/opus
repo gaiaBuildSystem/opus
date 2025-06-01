@@ -1,0 +1,97 @@
+#!/usr/bin/env bash
+
+# Opus command - standalone executable
+# This script sets up and runs the opus environment
+
+set -e
+
+# Configuration variables
+__OPUS_COMPOSE_FILE="$HOME/.opus/docker-compose.yml"
+# TODO: we do not have a bash completion file yet
+# __OPUS_BASH_COMPLETION_FILE="$HOME/.opus/opus-completion.bash"
+__OPUS_REPO="gaiaBuildSystem/opus"
+__OPUS_BRANCH="dev"
+__OPUS_UUID=$(id -u)
+__OPUS_DGID=$(getent group docker | cut -d: -f3)
+
+# Function to check and setup opus configuration
+check_and_setup_config() {
+    # Create opus directory if it doesn't exist
+    if [ ! -d "$HOME/.opus" ]; then
+        echo "Creating $HOME/.opus ..."
+        mkdir -p "$HOME/.opus"
+    fi
+
+    # Check if docker-compose.yml exists, download if missing
+    if [ ! -f "$__OPUS_COMPOSE_FILE" ]; then
+        echo "Downloading docker-compose.yml ..."
+        wget -q "https://raw.githubusercontent.com/$__OPUS_REPO/$__OPUS_BRANCH/scripts/container/docker-compose.yml" -O "$__OPUS_COMPOSE_FILE"
+    fi
+
+    # TODO: we do not have a bash completion file yet
+    # # Check if bash completion file exists, download if missing
+    # if [ ! -f "$__OPUS_BASH_COMPLETION_FILE" ]; then
+    #     echo "Downloading tool completion ..."
+    #     wget -q "https://raw.githubusercontent.com/$__OPUS_REPO/$__OPUS_BRANCH/scripts/bash/tcd-completion.bash" -O "$__OPUS_BASH_COMPLETION_FILE"
+    # fi
+
+    # Pull the latest opus image
+    echo "Pulling the opus image ..."
+    docker compose -f "$__OPUS_COMPOSE_FILE" pull opus
+}
+
+# Function to run opus command
+run_opus() {
+    local myhash=$(echo -n "$PWD" | openssl dgst -sha256 | sed 's/^.* //')
+    export __OPUS_SHA_DIR=$myhash
+
+    # check the arguments
+    # for --prune
+    if [[ "$1" == "--prune" ]]; then
+        echo "Pruning all opus environments ..."
+        docker compose -f "$__OPUS_COMPOSE_FILE" down --remove-orphans
+        echo "✅ All opus environments have been pruned"
+    fi
+
+    # Check if the container name already exists
+    if [ "$(docker ps -aq -f name=opus-$myhash)" ]; then
+        # Start the existing container
+        docker start opus-$myhash > /dev/null
+    else
+        # Create and configure new container
+        local _workspace=$(basename "$PWD")
+        echo "Configuring environment for the [$_workspace] workspace ..."
+        echo "Please wait ..."
+
+        docker \
+            compose \
+            -f "$__OPUS_COMPOSE_FILE" \
+            run \
+            --entrypoint /bin/bash \
+            --name opus-$myhash \
+            --user root \
+            -d opus > /dev/null
+
+        # Configure the torizon user in the container
+        docker exec -it --user root opus-$myhash usermod -u "$__OPUS_UUID" torizon
+        docker exec -it --user root opus-$myhash groupadd -g "$__OPUS_DGID" docker
+        docker exec -it --user root opus-$myhash usermod -aG "$__OPUS_DGID" torizon
+        # Set proper ownership for /home/torizon
+        docker exec -it --user root opus-$myhash chown -R phobos:phobos /home/torizon
+    fi
+
+    # Execute the command with the provided arguments
+    docker exec -it --user phobos opus-$myhash wrapper "$@"
+}
+
+# Main execution
+main() {
+    # Check early configuration and setup
+    check_and_setup_config
+
+    # Run the opus command with all provided arguments
+    run_opus "$@"
+}
+
+# Execute main function with all command line arguments
+main "$@"
