@@ -77,6 +77,7 @@ run_opus() {
 
         # Configure the torizon user in the container
         docker exec -it --user root opus-$myhash usermod -u "$__OPUS_UUID" phobos
+        docker exec -it --user root opus-$myhash groupdel docker
         docker exec -it --user root opus-$myhash groupadd -g "$__OPUS_DGID" docker
         docker exec -it --user root opus-$myhash usermod -aG "$__OPUS_DGID" phobos
         # Set proper ownership for /home/torizon
