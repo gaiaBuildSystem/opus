@@ -10,7 +10,7 @@ __OPUS_COMPOSE_FILE="$HOME/.opus/docker-compose.yml"
 # TODO: we do not have a bash completion file yet
 # __OPUS_BASH_COMPLETION_FILE="$HOME/.opus/opus-completion.bash"
 __OPUS_REPO="gaiaBuildSystem/opus"
-__OPUS_BRANCH="dev"
+__OPUS_BRANCH="main"
 __OPUS_UUID=$(id -u)
 __OPUS_DGID=$(getent group docker | cut -d: -f3)
 
@@ -25,7 +25,7 @@ check_and_setup_config() {
     # Check if docker-compose.yml exists, download if missing
     if [ ! -f "$__OPUS_COMPOSE_FILE" ]; then
         echo "Downloading docker-compose.yml ..."
-        wget -q "https://raw.githubusercontent.com/$__OPUS_REPO/$__OPUS_BRANCH/scripts/container/docker-compose.yml" -O "$__OPUS_COMPOSE_FILE"
+        wget -q "https://raw.githubusercontent.com/$__OPUS_REPO/$__OPUS_BRANCH/.devcontainer/docker-compose.yml" -O "$__OPUS_COMPOSE_FILE"
     fi
 
     # TODO: we do not have a bash completion file yet
