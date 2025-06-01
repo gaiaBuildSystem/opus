@@ -13,5 +13,5 @@ if [ -z "$OPUS_CLI" ]; then
     sudo -u phobos -i /bin/bash --login -c "source /opt/venv/bin/activate && $@"
 else
     # run the opus command with the provided arguments
-    sudo -u phobos -i /bin/bash --login -c "cd /project && source /opt/venv/bin/activate && ./main.xsh $@"
+    sudo -u phobos -i /bin/bash --login -c "source /opt/venv/bin/activate && cd /workspace && /project/main.xsh $@"
 fi
