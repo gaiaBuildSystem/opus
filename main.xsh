@@ -32,6 +32,7 @@ from src.task_stubs import (
     TaskSecurity
 )
 import src.debug as debug
+import src.utils as utils
 from src.i_custom import CustomSchemaInterface
 
 # xonsh import
@@ -56,7 +57,7 @@ def _main():
     """
 
     # For breakpoint debugging
-    debug.__breakpoint()
+    # debug.__breakpoint()
 
     # read the custom.yaml file
     config: CustomSchemaInterface = CustomSchemaInterface.from_yaml()
@@ -174,7 +175,10 @@ def _main():
 
 
 # support for multiple arch
-sudo docker run --rm -it --privileged pergamos/binfmt:9.0.2
+utils.create_cache("binfmt")
+if not utils.cached("binfmt", "run"):
+    sudo docker run --rm -it --privileged pergamos/binfmt:9.0.2
+    utils.write_cache("binfmt", "run")
 
 # call the main function
 _main()

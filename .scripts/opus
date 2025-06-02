@@ -7,6 +7,7 @@ set -e
 
 # Configuration variables
 __OPUS_COMPOSE_FILE="$HOME/.opus/docker-compose.yml"
+__OPUS_LAST_PULL_FILE="$HOME/.opus/.last_pull"
 # TODO: we do not have a bash completion file yet
 # __OPUS_BASH_COMPLETION_FILE="$HOME/.opus/opus-completion.bash"
 __OPUS_REPO="gaiaBuildSystem/opus"
@@ -36,6 +37,28 @@ check_and_setup_config() {
     # fi
 }
 
+# Function to check if we need to pull the opus image (only once per day)
+should_pull_image() {
+    local current_time=$(date +%s)
+    local last_pull_time=0
+
+    # Check if last pull timestamp file exists
+    if [ -f "$__OPUS_LAST_PULL_FILE" ]; then
+        last_pull_time=$(cat "$__OPUS_LAST_PULL_FILE" 2>/dev/null || echo 0)
+    fi
+
+    # Calculate time difference (86400 seconds = 24 hours)
+    local time_diff=$((current_time - last_pull_time))
+
+    # Return 0 (true) if more than 24 hours have passed, 1 (false) otherwise
+    [ $time_diff -gt 86400 ]
+}
+
+# Function to update the last pull timestamp
+update_last_pull_time() {
+    echo $(date +%s) > "$__OPUS_LAST_PULL_FILE"
+}
+
 # Function to run opus command
 run_opus() {
     local myhash=$(echo -n "$PWD" | openssl dgst -sha256 | sed 's/^.* //')
@@ -43,9 +66,14 @@ run_opus() {
     export __OPUS_UUID
     export __OPUS_DGID
 
-    # Pull the latest opus image
-    echo "Pulling the opus image ..."
-    docker compose -f "$__OPUS_COMPOSE_FILE" pull opus
+    # Pull the latest opus image (only once per day)
+    if should_pull_image; then
+        echo "Pulling the opus image ..."
+        docker compose -f "$__OPUS_COMPOSE_FILE" pull opus
+        update_last_pull_time
+    else
+        echo "Opus image was pulled recently, skipping pull ..."
+    fi
 
     # check the arguments
     # for --prune
@@ -53,6 +81,16 @@ run_opus() {
         echo "Pruning all opus environments ..."
         docker compose -f "$__OPUS_COMPOSE_FILE" down --remove-orphans
         echo "✅ All opus environments have been pruned"
+        exit 0
+    fi
+
+    # for --force-pull
+    if [[ "$1" == "--force-pull" ]]; then
+        echo "Force pulling the opus image ..."
+        docker compose -f "$__OPUS_COMPOSE_FILE" pull opus
+        update_last_pull_time
+        shift # Remove --force-pull from arguments
+        echo "✅ Opus image has been force pulled"
         exit 0
     fi
 

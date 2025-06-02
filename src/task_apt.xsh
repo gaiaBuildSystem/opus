@@ -1,5 +1,7 @@
 """apt packages tasks."""
+import os
 import src.i_custom as i_custom
+import src.utils as utils
 from src.task_stubs import TaskChroot
 from torizon_templates_utils.errors import Error_Out, Error
 from torizon_templates_utils.colors import print, Color, BgColor
@@ -25,6 +27,7 @@ class TaskApt():
         self._chroot = task_chroot
         self._debug = debug
 
+        utils.create_cache("apt")
 
     def update(self):
         """Update the apt packages."""
@@ -34,11 +37,17 @@ class TaskApt():
 
         print("🆙  Updating apt packages...", color=Color.BLACK, bg_color=BgColor.BLUE)
 
+        # cache
+        if utils.cached("apt", "update"):
+            print("Using cache for apt packages updated.")
+            return
+
         # run the command in chroot
         _cmd = "apt-get update"
         print(_cmd)
 
         self._chroot.run(_cmd)
+        utils.write_cache("apt", "update")
 
 
     def install(self):
@@ -48,6 +57,11 @@ class TaskApt():
             return
 
         print("🆕  Installing apt packages...", color=Color.BLACK, bg_color=BgColor.BLUE)
+
+        # cache
+        if utils.cached_f("apt", "install", "./custom.yaml"):
+            print("Using cache for apt packages installed.")
+            return
 
         _to_install = getattr(self._apt, "install", []) or []
 
@@ -60,6 +74,7 @@ class TaskApt():
         print(_cmd)
 
         self._chroot.run(_cmd)
+        utils.write_cache_f("apt", "install", "./custom.yaml")
 
 
     def install_debug(self):
@@ -70,6 +85,11 @@ class TaskApt():
 
         print("🆕  Installing apt packages for debug...", color=Color.BLACK, bg_color=BgColor.BLUE)
 
+        # cache
+        if utils.cached_f("apt", "install_debug", "./custom.yaml"):
+            print("Using cache for apt packages installed.")
+            return
+
         _to_install = getattr(self._apt, "install_debug", []) or []
 
         # run the command in chroot
@@ -79,6 +99,7 @@ class TaskApt():
 
         _cmd = f"apt-get install -y {' '.join(self._apt.install_debug)}"
         self._chroot.run(_cmd)
+        utils.write_cache_f("apt", "install_debug", "./custom.yaml")
 
 
     def remove(self):
@@ -89,6 +110,11 @@ class TaskApt():
 
         print("✴️  Removing apt packages...", color=Color.BLACK, bg_color=BgColor.BLUE)
 
+        # cache
+        if utils.cached_f("apt", "removed", "./custom.yaml"):
+            print("Using cache for apt packages installed.")
+            return
+
         _to_remove = getattr(self._apt, "remove", []) or []
 
         # run the command in chroot
@@ -98,3 +124,4 @@ class TaskApt():
 
         _cmd = f"apt-get remove -y {' '.join(self._apt.remove)}"
         self._chroot.run(_cmd)
+        utils.write_cache_f("apt", "removed", "./custom.yaml")
