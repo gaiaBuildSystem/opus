@@ -75,6 +75,10 @@ class TaskOstree():
         """Deploy the ostree repo."""
         raise NotImplementedError
 
+    def push_to_torizon(self):
+        """Push the ostree repo to Torizon."""
+        raise NotImplementedError
+
 
 class TaskChroot():
     """Tasks for the chroot properties."""

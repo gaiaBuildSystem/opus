@@ -55,6 +55,7 @@ def _main():
     Main function to generate the custom image
     """
 
+    # For breakpoint debugging
     debug.__breakpoint()
 
     # read the custom.yaml file
@@ -65,7 +66,7 @@ def _main():
     # sys.exit(0)
 
     # edge case for debug
-    if config.image.debug:
+    if config.image.debug and config.image.debug.enable == True:
         print("⚠️ Debug mode enabled, skipping image generation.", color=Color.BLACK, bg_color=BgColor.YELLOW)
 
         # for debug we need dinamically load the sshchroot task
@@ -103,7 +104,8 @@ def _main():
         _task_ostree = TaskOstree(
             boot_dir=_task_image._boot_dir,
             root_dir=_task_image._root_dir,
-            machine=config.image.machine
+            machine=config.image.machine,
+            version=config.image.version
         )
         _task_ostree.get_deployed_commit()
         _task_ostree.mount_virtualfs()
@@ -129,6 +131,7 @@ def _main():
         _task_rootfs = TaskRootfs(config.image.rootfs, _task_chroot)
         _task_rootfs.remove()
         _task_rootfs.merge()
+        _task_rootfs.copy()
 
         # services
         _task_services = TaskServices(config.image.services, _task_chroot)
@@ -144,6 +147,7 @@ def _main():
         _task_ostree.umount_virtualfs()
         _task_ostree.commit()
         _task_ostree.deploy()
+        _task_ostree.push_to_torizon()
 
     except Exception as e:
         print(f"Error: {e}", color=Color.RED)
