@@ -72,21 +72,26 @@ def _main():
 
         # for debug we need dinamically load the sshchroot task
         # source @(script_path)/src/task_sshchroot.xsh
+        try:
+            _task_ssh = TaskSshChroot(config.image.debug.device, config.image)
+            _task_apt = TaskApt(config.image.apt, _task_ssh, config.image.debug)
 
-        _task_ssh = TaskSshChroot(config.image.debug.device)
-        _task_apt = TaskApt(config.image.apt, _task_ssh, config.image.debug)
+            _task_apt.remove()
+            _task_apt.update()
+            _task_apt.install()
+            _task_apt.install_debug()
 
-        _task_apt.remove()
-        _task_apt.update()
-        _task_apt.install()
-        _task_apt.install_debug()
+            # rootfs
+            _task_rootfs = TaskSshRootfs(config.image.rootfs, _task_ssh)
 
-        # rootfs
-        _task_rootfs = TaskSshRootfs(config.image.rootfs, _task_ssh)
-
-        _task_rootfs.remove()
-        _task_rootfs.merge()
-        _task_rootfs.copy()
+            _task_rootfs.remove()
+            _task_rootfs.merge()
+            _task_rootfs.copy()
+        except Exception as e:
+            Error_Out(
+                f"Error: {e}",
+                Error.EABORT
+            )
 
         print("🪳 Debug commands ran successfully!", color=Color.BLACK, bg_color=BgColor.GREEN)
         sys.exit(0)

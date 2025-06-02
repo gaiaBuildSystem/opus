@@ -11,8 +11,22 @@ class TaskSshChroot():
     """
 
 
-    def __init__(self, device: i_custom.DebugDevice):
+    def __init__(self, device: i_custom.DebugDevice, image: i_custom.ImageConfig):
         self._device = device
+
+        # check the match machine
+        _remote_machine = $(
+            ssh -p @(f"{self._device.port}") \
+                -o UserKnownHostsFile=/dev/null \
+                -o StrictHostKeyChecking=no \
+                -o LogLevel=ERROR \
+                @(f"root@{self._device.ip}") "echo $MARS_OSTREE_REPO_BRANCH"
+        )
+
+        if _remote_machine != image.machine:
+            raise Exception(
+                f"Remote machine '{_remote_machine}' does not match the image machine '{image.machine}'."
+            )
 
         # try to connect to the device
         # if this fails we will exit anyway
