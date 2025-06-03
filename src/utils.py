@@ -2,6 +2,7 @@
 
 import os
 import time
+import glob
 import hashlib
 
 
@@ -59,5 +60,11 @@ def write_cache_f(task: str, action: str, file: str):
     # write the hash to the cache
     cache_file = f"./.opus/{task}/{action}/{file_hash}.cache"
     os.makedirs(f"./.opus/{task}/{action}", exist_ok=True)
+
+    # delete all cache files from the cache directory
+    cache_files = glob.glob(f"./.opus/{task}/{action}/*.cache")
+    for cache_file in cache_files:
+        os.remove(cache_file)
+
     with open(cache_file, "w", encoding="utf-8") as f:
         f.write(file_hash)

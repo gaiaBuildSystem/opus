@@ -29,6 +29,7 @@ class TaskApt():
 
         utils.create_cache("apt")
 
+
     def update(self) -> bool:
         """Update the apt packages."""
         if self._skip:
