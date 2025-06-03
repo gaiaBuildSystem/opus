@@ -107,19 +107,19 @@ class TaskApt():
         self._skip = False
         self._chroot = task_chroot
 
-    def update(self):
+    def update(self) -> bool:
         """Update the apt packages."""
         raise NotImplementedError
 
-    def install(self):
+    def install(self) -> bool:
         """Install the apt packages."""
         raise NotImplementedError
 
-    def install_debug(self):
+    def install_debug(self) -> bool:
         """Install the debug apt packages."""
         raise NotImplementedError
 
-    def remove(self):
+    def remove(self) -> bool:
         """Remove the apt packages."""
         raise NotImplementedError
 

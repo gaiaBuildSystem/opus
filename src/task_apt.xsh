@@ -29,18 +29,18 @@ class TaskApt():
 
         utils.create_cache("apt")
 
-    def update(self):
+    def update(self) -> bool:
         """Update the apt packages."""
         if self._skip:
             print("No apt packages to update.")
-            return
+            return False
 
         print("🆙  Updating apt packages...", color=Color.BLACK, bg_color=BgColor.BLUE)
 
         # cache
         if utils.cached("apt", "update"):
             print("Using cache for apt packages updated.")
-            return
+            return False
 
         # run the command in chroot
         _cmd = "apt-get update"
@@ -49,26 +49,28 @@ class TaskApt():
         self._chroot.run(_cmd)
         utils.write_cache("apt", "update")
 
+        return True
 
-    def install(self):
+
+    def install(self) -> bool:
         """Install the apt packages."""
         if self._skip:
             print("No apt packages to update.")
-            return
+            return False
 
         print("🆕  Installing apt packages...", color=Color.BLACK, bg_color=BgColor.BLUE)
 
         # cache
         if utils.cached_f("apt", "install", "./custom.yaml"):
             print("Using cache for apt packages installed.")
-            return
+            return False
 
         _to_install = getattr(self._apt, "install", []) or []
 
         # run the command in chroot
         if len(_to_install) == 0:
             print("No apt packages to install.")
-            return
+            return False
 
         _cmd = f"apt-get install -y {' '.join(self._apt.install)}"
         print(_cmd)
@@ -76,33 +78,37 @@ class TaskApt():
         self._chroot.run(_cmd)
         utils.write_cache_f("apt", "install", "./custom.yaml")
 
+        return True
 
-    def install_debug(self):
+
+    def install_debug(self) -> bool:
         """Install the apt packages for debug."""
         if self._skip or not self._debug:
             print("No apt packages to update.")
-            return
+            return False
 
         print("🆕  Installing apt packages for debug...", color=Color.BLACK, bg_color=BgColor.BLUE)
 
         # cache
         if utils.cached_f("apt", "install_debug", "./custom.yaml"):
             print("Using cache for apt packages installed.")
-            return
+            return False
 
         _to_install = getattr(self._apt, "install_debug", []) or []
 
         # run the command in chroot
         if len(_to_install) == 0:
             print("No apt packages to install for debug.")
-            return
+            return False
 
         _cmd = f"apt-get install -y {' '.join(self._apt.install_debug)}"
         self._chroot.run(_cmd)
         utils.write_cache_f("apt", "install_debug", "./custom.yaml")
 
+        return True
 
-    def remove(self):
+
+    def remove(self) -> bool:
         """Remove the apt packages."""
         if self._skip:
             print("No apt packages to update.")
@@ -113,15 +119,17 @@ class TaskApt():
         # cache
         if utils.cached_f("apt", "removed", "./custom.yaml"):
             print("Using cache for apt packages installed.")
-            return
+            return False
 
         _to_remove = getattr(self._apt, "remove", []) or []
 
         # run the command in chroot
         if len(_to_remove) == 0:
             print("No apt packages to remove.")
-            return
+            return False
 
         _cmd = f"apt-get remove -y {' '.join(self._apt.remove)}"
         self._chroot.run(_cmd)
         utils.write_cache_f("apt", "removed", "./custom.yaml")
+
+        return True
