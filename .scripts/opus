@@ -94,6 +94,13 @@ run_opus() {
         exit 0
     fi
 
+    # for --force-run
+    if [[ "$1" == "--force-run" ]]; then
+        echo "Force run the opus environment invalidating the cache ..."
+        rm -rf ./.opus/apt
+        rm -rf ./.opus/binftm
+    fi
+
     # Check if the container name already exists
     if [ "$(docker ps -aq -f name=opus-$myhash)" ]; then
         # Start the existing container
