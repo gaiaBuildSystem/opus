@@ -35,6 +35,13 @@ class TaskChroot():
         self.run("rm -rf /etc")
 
 
+    def rollback_etc(self):
+        """This is used if something was failed during the deploy."""
+
+        self.run("mkdir -p /etc")
+        self.run("rsync -a /usr/etc/ /etc/")
+
+
     def run(self, cmd: str)-> int:
         """Run a command in chroot."""
         print(f"run command: {cmd}")

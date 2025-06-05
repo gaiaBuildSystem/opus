@@ -57,6 +57,7 @@ def _main():
     """
 
     IGNORE_DEBUG = False
+    DEPLOY_SUCCESS = False
 
     # get the first argument
     if len(sys.argv) > 1:
@@ -171,10 +172,18 @@ def _main():
         _task_ostree.umount_virtualfs()
         _task_ostree.commit()
         _task_ostree.deploy()
+        DEPLOY_SUCCESS = True
         _task_ostree.push_to_torizon()
 
     except Exception as e:
         print(f"Error: {e}", color=Color.RED)
+
+        if not DEPLOY_SUCCESS:
+            print("The changes was not deployed successfully, cleaning up...", color=Color.YELLOW)
+            try:
+                _task_chroot.rollback_etc()
+            except Exception as e:
+                print("chroot task was not initialized, skipping rollback of /etc", color=Color.YELLOW)
 
         # this is ok to fail, can be a null ref if we do not have inst ostree
         try:
