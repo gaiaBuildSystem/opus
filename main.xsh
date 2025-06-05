@@ -56,6 +56,14 @@ def _main():
     Main function to generate the custom image
     """
 
+    IGNORE_DEBUG = False
+
+    # get the first argument
+    if len(sys.argv) > 1:
+        if sys.argv[1] == "--ignore-debug":
+            IGNORE_DEBUG = True
+            print("Ignoring debug mode ...", color=Color.BLACK)
+
     # For breakpoint debugging
     # debug.__breakpoint()
 
@@ -67,7 +75,7 @@ def _main():
     # sys.exit(0)
 
     # edge case for debug
-    if config.image.debug and config.image.debug.enable == True:
+    if config.image.debug and config.image.debug.enable == True and not IGNORE_DEBUG:
         print("⚠️ Debug mode enabled, skipping image generation.", color=Color.BLACK, bg_color=BgColor.YELLOW)
 
         # for debug we need dinamically load the sshchroot task

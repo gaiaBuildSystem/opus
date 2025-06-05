@@ -94,9 +94,9 @@ run_opus() {
         exit 0
     fi
 
-    # for --force-run
-    if [[ "$1" == "--force-run" ]]; then
-        echo "Force run the opus environment invalidating the cache ..."
+    # for --force-run or --ignore-debug
+    if [[ "$1" == "--force-run" || "$1" == "--ignore-debug" ]]; then
+        echo "Invalidating the cache ..."
         rm -rf ./.opus/apt
         rm -rf ./.opus/binftm
     fi
