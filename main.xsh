@@ -11,6 +11,7 @@ $XONSH_SHOW_TRACEBACK = True
 
 import os
 import sys
+import argparse
 from pathlib import Path
 from torizon_templates_utils.errors import Error_Out, Error
 from torizon_templates_utils.colors import print, Color, BgColor
@@ -56,17 +57,50 @@ def _main():
     Main function to generate the custom image
     """
 
-    IGNORE_DEBUG = False
+    # print all the arg first
+    print(f"Runnig with argumets: {sys.argv}", color=Color.BLACK, bg_color=BgColor.BLUE)
+
+    # arguments
+    arg_parser = argparse.ArgumentParser()
+    arg_parser.add_argument(
+        "--dev-debug",
+        help="Enable development debug mode and expect some debugger to attach on 5678.",
+        action="store_true"
+    )
+    arg_parser.add_argument(
+        "--force-pull",
+        help="Force a fresh download and extract of the opus image.",
+        action="store_true"
+    )
+    arg_parser.add_argument(
+        "--force-run",
+        help="Invalidate the cache and run.",
+        action="store_true"
+    )
+    arg_parser.add_argument(
+        "--ignore-debug",
+        help="Even though the image.debug.enable is set to true, ignore it and generate the image anyway.",
+        action="store_true"
+    )
+    arg_parser.add_argument(
+        "--prune",
+        help="Remove all the opus environment contexts.",
+        action="store_true"
+    )
+
+    args = arg_parser.parse_args()
+
+    IGNORE_DEBUG = args.ignore_debug
+    DEV_DEBUG = args.dev_debug
     DEPLOY_SUCCESS = False
 
     # get the first argument
-    if len(sys.argv) > 1:
-        if sys.argv[1] == "--ignore-debug":
-            IGNORE_DEBUG = True
-            print("Ignoring debug mode ...", color=Color.BLACK)
+    if IGNORE_DEBUG == True:
+        print("Ignoring debug mode ...", color=Color.BLACK)
 
-    # For breakpoint debugging
-    # debug.__breakpoint()
+    if DEV_DEBUG == True:
+        print("Development debug enable, waiting to attach ...", color=Color.BLACK, bg_color=BgColor.YELLOW)
+        debug.__breakpoint()
 
     # read the custom.yaml file
     config: CustomSchemaInterface = CustomSchemaInterface.from_yaml()

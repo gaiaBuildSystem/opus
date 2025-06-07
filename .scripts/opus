@@ -130,7 +130,7 @@ run_opus() {
     fi
 
     # Execute the command with the provided arguments
-    docker exec -it --user phobos opus-$myhash wrapper "$@"
+    docker exec -it --user phobos opus-$myhash wrapper $@
 }
 
 # Main execution
@@ -139,8 +139,8 @@ main() {
     check_and_setup_config
 
     # Run the opus command with all provided arguments
-    run_opus "$@"
+    run_opus $@
 }
 
 # Execute main function with all command line arguments
-main "$@"
+main $@
