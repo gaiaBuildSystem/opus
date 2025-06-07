@@ -27,7 +27,7 @@ class TaskImage():
         """Extract the image."""
         print("📦  Extracting image...", color=Color.BLACK, bg_color=BgColor.BLUE)
 
-        _archive_file = f"./{self.config.machine}-ota-{self._version_path}.img.tar.xz"
+        _archive_file = f"./.{self.config.machine}/{self.config.machine}-ota-{self._version_path}.img.tar.xz"
         _target_dir = f"./.{self.config.machine}"
         _target_img = f"./.{self.config.machine}/{self.config.machine}-ota-{self._version_path}.img"
 
@@ -51,7 +51,7 @@ class TaskImage():
         print(f"Image URL: {_url}")
 
         # only if the file does not exist
-        if not os.path.exists(f"./{self.config.machine}-ota-{self._version_path}.img.tar.xz"):
+        if not os.path.exists(f"./.{self.config.machine}/{self.config.machine}-ota-{self._version_path}.img.tar.xz"):
             wget @(_url)
         else:
             print("Image already downloaded. Use --no-cache to force download.", color=Color.BLACK, bg_color=BgColor.YELLOW)
