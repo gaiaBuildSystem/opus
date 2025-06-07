@@ -57,9 +57,6 @@ def _main():
     Main function to generate the custom image
     """
 
-    # print all the arg first
-    print(f"Runnig with argumets: {sys.argv}", color=Color.BLACK, bg_color=BgColor.BLUE)
-
     # arguments
     arg_parser = argparse.ArgumentParser()
     arg_parser.add_argument(
