@@ -15,6 +15,12 @@
             "name": "Attach",
             "type": "debugpy",
             "request": "attach",
+            "pathMappings": [
+                {
+                    "localRoot": "${workspaceFolder}",
+                    "remoteRoot": "/project"
+                }
+            ],
             "connect": {
                 "host": "0.0.0.0",
                 "port": 5678
