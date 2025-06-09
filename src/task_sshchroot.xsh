@@ -68,6 +68,21 @@ class TaskSshChroot():
         print("🔍  Reconfiguring debug...", color=Color.BLACK, bg_color=BgColor.BLUE)
 
 
+    def copy(self, path: str):
+        """Copy a file to the remote chroot."""
+        print(f"Copying the file [{path}] to the remote chroot...")
+
+        # this copy to the /root user dir
+        scp \
+            -P \
+            @(f"{self._device.port}") \
+            -o UserKnownHostsFile=/dev/null \
+            -o StrictHostKeyChecking=no \
+            -o LogLevel=ERROR \
+            @(f"{path}") \
+            @(f"root@{self._device.ip}:/root")
+
+
     def run(self, cmd: str) -> int:
         """Run a command in chroot."""
         print(f"run command: {cmd}")

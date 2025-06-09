@@ -34,6 +34,8 @@ image:
       - /boot/overlays/rk3588-evb.dtb
     copy:
       - ./build-arm/app:/usr/app/app
+    chroot_debug:
+      - ./scripts/install-debugger.sh
     chroot:
       - ./scripts/check-boot.sh
   services:

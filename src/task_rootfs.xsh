@@ -89,6 +89,18 @@ class TaskRootfs():
                 @(f"{self._chroot._root_dir}{_rootfs_path}")
 
 
+    def chroot_debug(self):
+        """Run debug commands under the rootfs."""
+        if self._skip:
+            print("No rootfs configurations to run debug commands.")
+            return
+
+        if self._rootfs.chroot_debug is not None and len(self._rootfs.chroot_debug) > 0:
+            print("⚠️  Debug chroot scripts does not run under production task, skipping ...")
+        else:
+            print("No rootfs configurations to run debug commands.")
+
+
     def chroot(self):
         """Run script under the rootfs."""
         if self._skip:

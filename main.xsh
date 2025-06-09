@@ -142,6 +142,7 @@ def _main():
             _task_rootfs.remove()
             _task_rootfs.merge()
             _task_rootfs.copy()
+            _task_rootfs.chroot_debug()
 
             # only commit and deploy if the cached was not used
             if _cache_invalidated:

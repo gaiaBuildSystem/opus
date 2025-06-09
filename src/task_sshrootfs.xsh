@@ -10,7 +10,7 @@ import os
 import sys
 from pathlib import Path
 import src.i_custom as i_custom
-from src.task_stubs import TaskChroot
+from src.task_stubs import TaskSshChroot
 # we are redefining the print to have colors
 # pylint: disable=redefined-builtin
 from torizon_templates_utils.colors import print, Color, BgColor
@@ -19,13 +19,15 @@ from torizon_templates_utils.colors import print, Color, BgColor
 __script_path = Path(__file__).resolve().parent
 sys.path.append(str(__script_path))
 
-source @(__script_path)/task_chroot.xsh
+# xonsh import
+source @(__script_path)/task_sshchroot.xsh
+
 
 class TaskSshRootfs():
     """Tasks for the debug rootfs properties."""
     _device: i_custom.DebugDevice
 
-    def __init__(self, rootfs: i_custom.RootfsConfig, task_chroot: TaskChroot):
+    def __init__(self, rootfs: i_custom.RootfsConfig, task_chroot: TaskSshChroot):
         self._rootfs = rootfs
         self._skip = rootfs is None
         self._chroot = task_chroot
@@ -85,22 +87,41 @@ class TaskSshRootfs():
                 @(f"root@{self._device.ip}"):@(f"{_rootfs_path}")
 
 
-    def chroot(self):
-        """Run script under the rootfs."""
+    def chroot_debug(self):
+        """Run debug commands under the rootfs."""
         if self._skip:
-            print("No rootfs configurations to chroot.")
+            print("No rootfs configurations to run debug commands.")
             return
 
-        print("🔒  Chrooting into the rootfs...", color=Color.BLACK, bg_color=BgColor.BLUE)
+        if self._rootfs.chroot_debug is not None and len(self._rootfs.chroot_debug) > 0:
+            print("📜🪳  Running chroot_debug scripts ...", color=Color.BLACK, bg_color=BgColor.BLUE)
 
-        _to_chroot = getattr(self._rootfs, "chroot", []) or []
-        if len(_to_chroot) == 0:
-            print("No rootfs configurations to chroot.")
+            for _debug_script in self._rootfs.chroot_debug:
+                print(f"Running debug script: {_debug_script}")
+
+                # check if the script exists
+                if not os.path.exists(_debug_script):
+                    raise FileNotFoundError(
+                        f"chroot_debug [{_debug_script}] does not exist. Please check the path."
+                    )
+
+                self._chroot.copy(_debug_script)
+                self._chroot.run(f"chmod +x /root/{os.path.basename(_debug_script)}")
+                self._chroot.run(f"cd /root && ./{os.path.basename(_debug_script)}")
+        else:
+            print("No rootfs configurations to run debug commands.")
+
+
+    def chroot(self):
+        """Run chroot scripts commands under the rootfs."""
+        if self._skip:
+            print("No rootfs configurations to run chroot scripts commands.")
             return
 
-        raise NotImplementedError(
-            "Chrooting into the rootfs is not implemented yet. Please check the code."
-        )
+        if self._rootfs.chroot_debug is not None and len(self._rootfs.chroot_debug) > 0:
+            print("⚠️  chroot scripts does not run under production task, skipping ...")
+        else:
+            print("No chroot configurations to run scripts commands.")
 
 
     def copy(self):

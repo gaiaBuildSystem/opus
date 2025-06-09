@@ -151,6 +151,10 @@ class TaskRootfs():
         """Merge the rootfs configurations."""
         raise NotImplementedError
 
+    def chroot_debug(self):
+        """Run script under the rootfs in debug mode."""
+        raise NotImplementedError
+
     def chroot(self):
         """Run script under the rootfs."""
         raise NotImplementedError
@@ -241,6 +245,10 @@ class TaskSshChroot():
         """Reconfigure the chroot config mess."""
         raise NotImplementedError
 
+    def copy(self, path: str):
+        """Copy a file or folder from source to the rootfs via SSH."""
+        raise NotImplementedError
+
     def run(self, cmd: str) -> int:
         """Run a command in chroot."""
         raise NotImplementedError
@@ -265,6 +273,10 @@ class TaskSshRootfs():
 
     def merge(self):
         """Merge the rootfs configurations."""
+        raise NotImplementedError
+
+    def chroot_debug(self):
+        """Run script under the rootfs in debug mode."""
         raise NotImplementedError
 
     def chroot(self):

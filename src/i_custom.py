@@ -24,6 +24,7 @@ class RootfsConfig:
     """Configuration for root filesystem modifications."""
     merge: Optional[List[str]] = None
     remove: Optional[List[str]] = None
+    chroot_debug: Optional[List[str]] = None
     chroot: Optional[List[str]] = None
     copy: Optional[List[str]] = None
 
@@ -31,11 +32,13 @@ class RootfsConfig:
             self,
             merge: Optional[List[str]] = None,
             remove: Optional[List[str]] = None,
+            chroot_debug: Optional[List[str]] = None,
             chroot: Optional[List[str]] = None,
             copy: Optional[List[str]] = None
     ):
         self.merge = merge
         self.remove = remove
+        self.chroot_debug = chroot_debug
         self.chroot = chroot
         self.copy = copy
 
@@ -161,6 +164,8 @@ class CustomSchemaInterface:
                 print(f"Rootfs to Merge: {len(self.image.rootfs.merge)}")
             if self.image.rootfs.remove:
                 print(f"Rootfs to Remove: {len(self.image.rootfs.remove)}")
+            if self.image.rootfs.chroot_debug:
+                print(f"Rootfs to Chroot Debug: {len(self.image.rootfs.chroot_debug)}")
             if self.image.rootfs.chroot:
                 print(f"Rootfs to Chroot: {len(self.image.rootfs.chroot)}")
         if self.image.kernel:
