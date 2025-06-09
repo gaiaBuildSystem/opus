@@ -18,6 +18,9 @@ class TaskChroot():
 
         print("Fixups for chroot ...")
 
+        # disable the chattr
+        sudo chattr -i @(self._root_dir)
+
         self.run("rm -rf /var")
         self.run("mkdir -p /var/log/apt")
         self.run("chmod 1777 /tmp")
