@@ -1,12 +1,23 @@
 """rootfs configurations."""
-import src.i_custom as i_custom
-from src.task_stubs import TaskChroot
-from torizon_templates_utils.errors import Error_Out, Error
+
+# pylint: disable=import-error
+# pylint: disable=wrong-import-order
+# pylint: disable=broad-exception-caught
+# pylint: disable=protected-access
+
+import os
+import sys
+from pathlib import Path
+# we are redefining the print to have colors
+# pylint: disable=redefined-builtin
 from torizon_templates_utils.colors import print, Color, BgColor
 
 # to import the local modules
 __script_path = Path(__file__).resolve().parent
 sys.path.append(str(__script_path))
+
+import src.i_custom as i_custom
+from src.task_stubs import TaskChroot
 
 source @(__script_path)/task_chroot.xsh
 
@@ -15,7 +26,7 @@ class TaskRootfs():
 
     def __init__(self, rootfs: i_custom.RootfsConfig, task_chroot: TaskChroot):
         self._rootfs = rootfs
-        self._skip = (rootfs is None)
+        self._skip = rootfs is None
         self._chroot = task_chroot
 
 
@@ -36,7 +47,10 @@ class TaskRootfs():
         for _path in _to_remove:
             # check if the path exists
             if not os.path.exists(f"{self._rootfs}{_path}"):
-                print(f"Path {_path} does not exist under the image rootfs. Skipping.", color=Color.YELLOW)
+                print(
+                    f"Path {_path} does not exist under the image rootfs. Skipping.",
+                    color=Color.YELLOW
+                )
                 continue
 
             print(f"Removing path {_path} from the image rootfs.")
@@ -117,12 +131,15 @@ class TaskRootfs():
             # Create parent directory if it doesn't exist
             _parent_dir = os.path.dirname(_full_dest)
             if not os.path.exists(_parent_dir):
+                print(f"Creating parent directory {_parent_dir} in the image rootfs.")
                 sudo mkdir -p @(_parent_dir)
 
             # Copy the file or directory
             if os.path.isdir(_source):
+                print("rsync for directories to handle recursive copying ...")
                 # For directories, use rsync to handle recursive copying
                 sudo rsync -a @(f"{_source}/") @(f"{_full_dest}/")
             else:
+                print("cp for files ...")
                 # For files, use cp
                 sudo cp @(_source) @(_full_dest)

@@ -1,9 +1,15 @@
 """apt packages tasks."""
-import os
+
+# pylint: disable=import-error
+# pylint: disable=wrong-import-order
+
+import sys
 import src.i_custom as i_custom
 import src.utils as utils
+from pathlib import Path
 from src.task_stubs import TaskChroot
-from torizon_templates_utils.errors import Error_Out, Error
+# we are redefining the print to have colors
+# pylint: disable=redefined-builtin
 from torizon_templates_utils.colors import print, Color, BgColor
 
 # to import the local modules
@@ -23,7 +29,7 @@ class TaskApt():
         debug: bool = False
     ):
         self._apt = apt
-        self._skip = (apt is None)
+        self._skip = apt is None
         self._chroot = task_chroot
         self._debug = debug
 

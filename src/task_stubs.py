@@ -1,4 +1,5 @@
 """Task stubs for the image properties."""
+# pylint: disable=import-error
 import src.i_custom as i_custom
 
 class TaskImage():
@@ -46,7 +47,7 @@ class TaskOstree():
     _deploy_commit_hash: str
     _mounted: bool
 
-    def __init__(self, boot_dir: str, root_dir: str, machine: str):
+    def __init__(self, boot_dir: str, root_dir: str, machine: str, version: str):
         self._boot_dir = boot_dir
         self._root_dir = root_dir
         self._machine = machine
@@ -54,6 +55,7 @@ class TaskOstree():
         self._deploy_commit_hash = ""
         self._ostree_deploy = ""
         self._mounted = False
+        self._version = version
 
     def mount_virtualfs(self):
         """mount the virtual fs"""
@@ -102,10 +104,16 @@ class TaskApt():
     _skip: bool
     _chroot: TaskChroot
 
-    def __init__(self, apt: i_custom.AptConfig, task_chroot: TaskChroot):
+    def __init__(
+        self,
+        apt: i_custom.AptConfig,
+        task_chroot: TaskChroot,
+        device: i_custom.DebugDevice | None = None
+    ):
         self._apt = apt
         self._skip = False
         self._chroot = task_chroot
+        self._device = device  # Device is used for SSH tasks, if applicable
 
     def update(self) -> bool:
         """Update the apt packages."""
@@ -225,8 +233,9 @@ class TaskSshChroot():
     """
     _device: i_custom.DebugDevice
 
-    def __init__(self, device: i_custom.DebugDevice):
+    def __init__(self, device: i_custom.DebugDevice, image: i_custom.ImageConfig):
         self._device = device
+        self._image = image
 
     def reconfigure(self):
         """Reconfigure the chroot config mess."""

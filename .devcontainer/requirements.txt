@@ -6,6 +6,7 @@ xonsh
 torizon-templates-utils
 pylsp-rope
 python-lsp-server
+pylint-xonsh==4.0.9.dev0
 debugpy
 distro
 shtab

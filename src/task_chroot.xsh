@@ -1,8 +1,13 @@
 """Task for run commands in chroot."""
+
+# pylint: disable=import-error
+# pylint: disable=wrong-import-order
+
 import shlex
-import src.i_custom as i_custom
-from torizon_templates_utils.errors import Error_Out, Error
+# we are redefining the print to have colors
+# pylint: disable=redefined-builtin
 from torizon_templates_utils.colors import print, Color, BgColor
+
 
 class TaskChroot():
     """Tasks for the chroot properties."""
@@ -11,7 +16,7 @@ class TaskChroot():
     def __init__(self, root_dir: str):
         self._root_dir = root_dir
 
-        print(f"Fixups for chroot ...")
+        print("Fixups for chroot ...")
 
         self.run("rm -rf /var")
         self.run("mkdir -p /var/log/apt")
@@ -19,7 +24,7 @@ class TaskChroot():
         self.run("rm -rf /etc/resolv.conf")
         self.run('echo "nameserver 8.8.8.8" > /etc/resolv.conf')
 
-        print(f"Fixups for chroot, ok")
+        print("Fixups for chroot, ok")
 
 
     def reconfigure(self):

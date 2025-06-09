@@ -1,5 +1,7 @@
 #!/usr/bin/env xonsh
 
+# pylint: disable=protected-access
+
 # Copyright (c) 2025 Matheus Castello
 # SPDX-License-Identifier: MIT
 
@@ -9,11 +11,12 @@ $UPDATE_OS_ENVIRON = True
 $RAISE_SUBPROC_ERROR = True
 $XONSH_SHOW_TRACEBACK = True
 
-import os
 import sys
 import argparse
 from pathlib import Path
 from torizon_templates_utils.errors import Error_Out, Error
+# we are redefining the print to have colors
+# pylint: disable=redefined-builtin
 from torizon_templates_utils.colors import print, Color, BgColor
 
 # to import the local modules
@@ -76,6 +79,7 @@ def _main():
     )
     arg_parser.add_argument(
         "--ignore-debug",
+        # pylint: disable=line-too-long
         help="Even though the image.debug.enable is set to true, ignore it and generate the image anyway.",
         action="store_true"
     )
@@ -92,12 +96,16 @@ def _main():
     DEPLOY_SUCCESS = False
 
     # get the first argument
-    if IGNORE_DEBUG == True:
+    if IGNORE_DEBUG is True:
         print("Ignoring debug mode ...", color=Color.BLACK)
 
-    if DEV_DEBUG == True:
-        print("Development debug enable, waiting to attach ...", color=Color.BLACK, bg_color=BgColor.YELLOW)
-        debug.__breakpoint()
+    if DEV_DEBUG is True:
+        print(
+            "Development debug enable, waiting to attach ...",
+            color=Color.BLACK,
+            bg_color=BgColor.YELLOW
+        )
+        debug.breakpoint()
 
     # read the custom.yaml file
     config: CustomSchemaInterface = CustomSchemaInterface.from_yaml()
@@ -107,8 +115,12 @@ def _main():
     # sys.exit(0)
 
     # edge case for debug
-    if config.image.debug and config.image.debug.enable == True and not IGNORE_DEBUG:
-        print("⚠️ Debug mode enabled, skipping image generation.", color=Color.BLACK, bg_color=BgColor.YELLOW)
+    if config.image.debug and config.image.debug.enable is True and not IGNORE_DEBUG:
+        print(
+            "⚠️ Debug mode enabled, skipping image generation.",
+            color=Color.BLACK,
+            bg_color=BgColor.YELLOW
+        )
 
         # for debug we need dinamically load the sshchroot task
         # source @(script_path)/src/task_sshchroot.xsh
@@ -137,6 +149,7 @@ def _main():
                 _task_ssh.run("mars commit")
                 _task_ssh.run("mars deploy")
 
+        # pylint: disable=broad-exception-caught
         except Exception as e:
             Error_Out(
                 f"Error: {e}",
@@ -206,6 +219,7 @@ def _main():
         DEPLOY_SUCCESS = True
         _task_ostree.push_to_torizon()
 
+    # pylint: disable=broad-exception-caught
     except Exception as e:
         print(f"Error: {e}", color=Color.RED)
 
@@ -213,14 +227,15 @@ def _main():
             print("The changes was not deployed successfully, cleaning up...", color=Color.YELLOW)
             try:
                 _task_chroot.rollback_etc()
-            except Exception as e:
+            except Exception as _e:
+                # pylint: disable=line-too-long
                 print("chroot task was not initialized, skipping rollback of /etc", color=Color.YELLOW)
 
         # this is ok to fail, can be a null ref if we do not have inst ostree
         try:
             _task_ostree.umount_virtualfs()
-        except Exception as e:
-            print(f"Error unmounting virtual fs: {e}", color=Color.RED)
+        except Exception as _e:
+            print(f"Error unmounting virtual fs: {_e}", color=Color.RED)
             print("The above error is ok to ignore, the cleanup tryed to clean something that was not mounted", color=Color.YELLOW)
 
         _task_image.unmount()
@@ -241,6 +256,7 @@ def _main():
 utils.create_cache("binfmt")
 if not utils.cached("binfmt", "run"):
     sudo docker run --rm -it --privileged pergamos/binfmt:9.0.2
+    echo "Binfmt support enabled for multiple architectures."
     utils.write_cache("binfmt", "run")
 
 # call the main function

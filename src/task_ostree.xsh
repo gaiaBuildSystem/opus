@@ -1,9 +1,16 @@
 """Task for ostree commands."""
+
+# pylint: disable=import-error
+# pylint: disable=wrong-import-order
+# pylint: disable=broad-exception-caught
+
 import os
 import json
-import src.i_custom as i_custom
 from torizon_templates_utils.errors import Error_Out, Error
+# we are redefining the print to have colors
+# pylint: disable=redefined-builtin
 from torizon_templates_utils.colors import print, Color, BgColor
+
 
 class TaskOstree():
     """Tasks for the ostree properties."""
@@ -55,6 +62,7 @@ class TaskOstree():
         """Get the deployed commit."""
         print("🔍  Getting deployed commit...", color=Color.BLACK, bg_color=BgColor.BLUE)
 
+        _commit = None
         _commit = $(ostree rev-parse --repo=@(self._ostree_repo) @(self._machine))
 
         if not _commit:
@@ -123,7 +131,11 @@ class TaskOstree():
 
         # check if the credentials file exists
         if not os.path.exists(_cred_path):
-            print("⚠️ Credentials file not found, skipping push to torizon.io", color=Color.BLACK, bg_color=BgColor.YELLOW)
+            print(
+                "⚠️ Credentials file not found, skipping push to torizon.io",
+                color=Color.BLACK,
+                bg_color=BgColor.YELLOW
+            )
             return
 
         # check if the repo z2 exists
@@ -145,7 +157,7 @@ class TaskOstree():
         _commit = self.get_deployed_commit()
 
         # push to torizon
-        print(f"Pushing OTA to Torizon Cloud:")
+        print("Pushing OTA to Torizon Cloud:")
         print(f"Module: {self._machine}")
         print(f"Commit: {_commit}")
 

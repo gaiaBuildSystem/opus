@@ -1,8 +1,11 @@
 """Task for run commands in chroot."""
 import shlex
-import src.i_custom as i_custom
-from torizon_templates_utils.errors import Error_Out, Error
+# pylint: disable=redefined-builtin
 from torizon_templates_utils.colors import print, Color, BgColor
+
+# pylint: disable=import-error
+import src.i_custom as i_custom
+
 
 class TaskSshChroot():
     """
@@ -23,8 +26,11 @@ class TaskSshChroot():
                 @(f"root@{self._device.ip}") "echo $MARS_OSTREE_REPO_BRANCH"
         )
 
+        # pylint: disable=undefined-variable
         if _remote_machine != image.machine:
+            # pylint: disable=broad-exception-raised
             raise Exception(
+                # pylint: disable=line-too-long
                 f"Remote machine '{_remote_machine}' does not match the image machine '{image.machine}'."
             )
 
@@ -83,4 +89,5 @@ class TaskSshChroot():
 
         # not sure yet if the ssh return and error code
         # the xonsh will raise an exception too, so, let's return here
+        # pylint: disable=undefined-variable
         return __xonsh__.last.returncode

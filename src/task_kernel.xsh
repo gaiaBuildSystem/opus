@@ -1,7 +1,12 @@
 """kernel tasks."""
+
+# pylint: disable=import-error
+# pylint: disable=wrong-import-order
+
 import src.i_custom as i_custom
-from torizon_templates_utils.errors import Error_Out, Error
-from torizon_templates_utils.colors import print, Color, BgColor
+# we are redefining the print to have colors
+# pylint: disable=redefined-builtin
+from torizon_templates_utils.colors import print
 
 
 class TaskKernel():
@@ -9,7 +14,7 @@ class TaskKernel():
 
     def __init__(self, kernel: i_custom.KernelConfig):
         self._kernel = kernel
-        self._skip = (kernel is None)
+        self._skip = kernel is None
 
         if not self._skip:
             raise NotImplementedError(

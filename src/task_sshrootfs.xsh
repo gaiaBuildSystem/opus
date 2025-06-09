@@ -1,8 +1,18 @@
 """rootfs configurations."""
+
+# pylint: disable=import-error
+# pylint: disable=wrong-import-order
+# pylint: disable=broad-exception-caught
+# pylint: disable=protected-access
+# pylint: disable=line-too-long
+
 import os
+import sys
+from pathlib import Path
 import src.i_custom as i_custom
 from src.task_stubs import TaskChroot
-from torizon_templates_utils.errors import Error_Out, Error
+# we are redefining the print to have colors
+# pylint: disable=redefined-builtin
 from torizon_templates_utils.colors import print, Color, BgColor
 
 # to import the local modules
@@ -17,7 +27,7 @@ class TaskSshRootfs():
 
     def __init__(self, rootfs: i_custom.RootfsConfig, task_chroot: TaskChroot):
         self._rootfs = rootfs
-        self._skip = (rootfs is None)
+        self._skip = rootfs is None
         self._chroot = task_chroot
         self._device = getattr(self._chroot, "_device", None)
 
@@ -94,6 +104,7 @@ class TaskSshRootfs():
 
 
     def copy(self):
+        """Copy files to the rootfs."""
         if self._skip:
             print("No rootfs configurations to copy.")
             return
@@ -113,6 +124,7 @@ class TaskSshRootfs():
 
             # check if the source is a dir or file
             if os.path.isdir(_source):
+                print("Let's add something here")
                 # the rsync here need to be a remote rsync
                 sudo rsync \
                     -a @(f"{_source}/") \

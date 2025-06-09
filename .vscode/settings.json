@@ -2,7 +2,21 @@
     "window.title": "Opus - PhobOS Customization",
     "workbench.sideBar.location": "left",
     "pylsp.executable": "/opt/venv/bin/pylsp",
+    "pylsp.plugins.pylint.enabled": true,
+    "pylsp.plugins.pyflakes.enabled": false,
+    "pylsp.plugins.pylint.executable": "/opt/venv/bin/pylint",
     "python.defaultInterpreterPath": "/opt/venv/bin/python",
+    "pylint.enabled": true,
+    "pylint.args": [
+        "--disable=E0015"
+    ],
+    "pylint.path": [
+        "/opt/venv/bin/pylint"
+    ],
+    "python.analysis.inlayHints.callArgumentNames": "all",
+    "python.analysis.inlayHints.functionReturnTypes": true,
+    "python.analysis.inlayHints.pytestParameters": true,
+    "python.analysis.inlayHints.variableTypes": true,
     "mypy-type-checker.ignorePatterns": [
         "*.xsh",
         "**/*.xsh"
