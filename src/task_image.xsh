@@ -27,7 +27,9 @@ class TaskImage():
 
     def __init__(self, config: i_custom.ImageConfig):
         self.config = config
-        self._version_path = self.config.version.replace(".", "-")
+        # TODO: I'm adding this hard coded for now
+        # self._version_path = self.config.version.replace(".", "-")
+        self._version_path = "0-0-0"
 
 
     def _extract(self):
@@ -63,7 +65,14 @@ class TaskImage():
             f"./.{self.config.machine}/{self.config.machine}-ota-{self._version_path}.img.tar.xz"
         ):
             print("Downloading image...")
-            wget @(_url)
+
+            # Ensure the target directory exists
+            _target_dir = f"./.{self.config.machine}"
+            if not os.path.exists(_target_dir):
+                os.makedirs(_target_dir)
+
+            # Download the file to the correct directory
+            wget -P @(_target_dir) @(_url)
         else:
             print(
                 "Image already downloaded. Use --no-cache to force download.",
