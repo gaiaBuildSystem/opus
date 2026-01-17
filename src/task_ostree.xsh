@@ -6,6 +6,7 @@
 
 import os
 import json
+import subprocess
 from torizon_templates_utils.errors import Error_Out, Error
 # we are redefining the print to have colors
 # pylint: disable=redefined-builtin
@@ -188,11 +189,18 @@ class TaskOstree():
         _meta_json = json.dumps(_meta)
 
         print("initializing metadata ...")
-        sudo uptane-sign \
-            init \
-            --credentials @(_cred_path) \
-            --repo @(_tuf_path) \
-            --verbose
+        # Check if the repository is already initialized
+        try:
+            sudo uptane-sign \
+                init \
+                --credentials @(_cred_path) \
+                --repo @(_tuf_path) \
+                --verbose
+        except Exception as e:
+            print(
+                "Repository already initialized, skipping init step ...",
+                color=Color.YELLOW
+            )
 
         print("Pulling targets ...")
         sudo uptane-sign \
