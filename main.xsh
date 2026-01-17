@@ -139,6 +139,7 @@ def _main():
             _task_rootfs = TaskSshRootfs(config.image.rootfs, _task_ssh)
 
             # does not use the cache
+            _task_rootfs.mkdir()
             _task_rootfs.remove()
             _task_rootfs.merge()
             _task_rootfs.copy()
@@ -199,6 +200,7 @@ def _main():
 
         # rootfs
         _task_rootfs = TaskRootfs(config.image.rootfs, _task_chroot)
+        _task_rootfs.mkdir()
         _task_rootfs.remove()
         _task_rootfs.merge()
         _task_rootfs.copy()

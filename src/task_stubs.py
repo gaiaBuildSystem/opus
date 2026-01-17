@@ -147,6 +147,10 @@ class TaskRootfs():
         """Remove the rootfs configurations."""
         raise NotImplementedError
 
+    def mkdir(self):
+        """Create the path uses mkdir -p"""
+        raise NotImplementedError
+
     def merge(self):
         """Merge the rootfs configurations."""
         raise NotImplementedError
@@ -266,6 +270,10 @@ class TaskSshRootfs():
         self._skip = False
         self._chroot = task_chroot
         # Note: _device should be extracted from task_chroot in real implementation
+
+    def mkdir(self):
+        """Create the path uses mkdir -p"""
+        raise NotImplementedError
 
     def remove(self):
         """Remove the rootfs configurations."""

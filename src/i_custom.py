@@ -22,6 +22,7 @@ class AptConfig:
 
 class RootfsConfig:
     """Configuration for root filesystem modifications."""
+    mkdir: Optional[List[str]] = None
     merge: Optional[List[str]] = None
     remove: Optional[List[str]] = None
     chroot_debug: Optional[List[str]] = None
@@ -30,12 +31,14 @@ class RootfsConfig:
 
     def __init__(
             self,
+            mkdir: Optional[List[str]] = None,
             merge: Optional[List[str]] = None,
             remove: Optional[List[str]] = None,
             chroot_debug: Optional[List[str]] = None,
             chroot: Optional[List[str]] = None,
             copy: Optional[List[str]] = None
     ):
+        self.mkdir = mkdir
         self.merge = merge
         self.remove = remove
         self.chroot_debug = chroot_debug

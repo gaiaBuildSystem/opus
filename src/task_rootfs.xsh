@@ -58,6 +58,24 @@ class TaskRootfs():
             rm -rf @(f"{self._rootfs}{_path}")
 
 
+    def mkdir(self):
+        """Create the path."""
+        if self._skip:
+            print("No rootfs configurations to create directories.")
+            return
+
+        print("📂  Creating directories in rootfs...", color=Color.BLACK, bg_color=BgColor.BLUE)
+        _to_mkdir = getattr(self._rootfs, "mkdir", []) or []
+
+        if len(_to_mkdir) == 0:
+            print("No rootfs configurations to create directories.")
+            return
+
+        for _dir in _to_mkdir:
+            _full_dir = f"{self._chroot._root_dir}{_dir}"
+            sudo mkdir -p @(f"{_full_dir}")
+
+
     def merge(self):
         """Merge the rootfs configurations."""
         if self._skip:
@@ -85,7 +103,7 @@ class TaskRootfs():
             # WARNING: this / on the fstring is for the rsync sinc instead of
             # copy the folder inside the folder
             sudo rsync \
-                -a @(f"{_path}/") \
+                -a --mkpath @(f"{_path}/") \
                 @(f"{self._chroot._root_dir}{_rootfs_path}")
 
 

@@ -57,6 +57,27 @@ class TaskSshRootfs():
             self._chroot.run(f"rm -rf {_path}")
 
 
+    def mkdir(self):
+        """Create the path uses mkdir -p"""
+        if self._skip:
+            print("No rootfs configurations to create directories.")
+            return
+
+        print("📂  Creating directories in rootfs...", color=Color.BLACK, bg_color=BgColor.BLUE)
+
+        _to_mkdir = getattr(self._rootfs, "mkdir", []) or []
+
+        if len(_to_mkdir) == 0:
+            print("No rootfs configurations to create directories.")
+            return
+
+        for _path in _to_mkdir:
+            print(f"Creating directory {_path} in the image rootfs.")
+            # the mkdir here need to be a remote mkdir
+            # remembering that the _chroot here is a TaskSshChroot instance
+            self._chroot.run(f"mkdir -p {_path}")
+
+
     def merge(self):
         """Merge the rootfs configurations."""
         if self._skip:
@@ -82,7 +103,7 @@ class TaskSshRootfs():
             print(f"Merging path {_rootfs_path} to the image rootfs.")
             # the rsync here need to be a remote rsync
             sudo rsync \
-                -a @(f"{_path}/") \
+                -a --mkpath @(f"{_path}/") \
                 -e @(f"ssh -p {self._device.port} -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=ERROR") \
                 @(f"root@{self._device.ip}"):@(f"{_rootfs_path}")
 

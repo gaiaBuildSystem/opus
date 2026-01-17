@@ -23,6 +23,8 @@ image:
       - gnupg
       - lsb-release
   rootfs:
+    mkdir:
+      - /etc/xdg/weston
     merge:
       - ./rootfs/lib/modules
       - ./rootfs/boot
