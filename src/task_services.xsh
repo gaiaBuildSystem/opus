@@ -22,10 +22,14 @@ source @(__script_path)/task_chroot.xsh
 class TaskServices():
     """Tasks for managing systemd services."""
 
-    def __init__(self, services: i_custom.ServicesConfig, task_chroot: TaskChroot):
+    def __init__(
+        self, services: i_custom.ServicesConfig, task_chroot: TaskChroot,
+        debug: bool = False
+    ):
         self._services = services
         self._skip = services is None
         self._chroot = task_chroot
+        self._debug = debug
 
 
     def enable(self):
@@ -47,6 +51,11 @@ class TaskServices():
             print(f"Enabling service: {service}")
             _cmd = f"systemctl enable {service}"
             self._chroot.run(_cmd)
+
+            if self._debug:
+                print(f"Starting service: {service}")
+                _cmd_start = f"systemctl start {service}"
+                self._chroot.run(_cmd_start)
 
 
     def disable(self):
