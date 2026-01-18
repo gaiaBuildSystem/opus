@@ -44,17 +44,21 @@ Configure debug mode for development on connected devices:
 ```yaml
 debug:
   enable: true
+  commit: true
   device:
     ip: "192.168.1.100"
     port: 22
 ```
 
 - `enable` (boolean): Enable or disable debug mode
+- `commit` (boolean): Commit and deploy changes to the connected device
 - `device` (required when enabled):
   - `ip` (string): Device IP address
   - `port` (integer): Connection port (1-65535)
 
 When debug mode is enabled the Opus instead of create an output image, it will deploy the changes directly to the connected device via SSH.
+
+If `commit` is set to true, all changes will be committed in a new OSTree commit and deployed to the connected device.
 
 #### Package Management (apt)
 

@@ -127,20 +127,19 @@ def _main():
         # for debug we need dinamically load the sshchroot task
         # source @(script_path)/src/task_sshchroot.xsh
         try:
-            _cache_invalidated = False
             _task_ssh = TaskSshChroot(config.image.debug.device, config.image)
             _task_apt = TaskApt(config.image.apt, _task_ssh, config.image.debug)
             _task_env = TaskEnv(config.image.env, _task_ssh, config.image.debug)
             _task_services = TaskServices(config.image.services, _task_ssh, config.image.debug)
 
             # uses the cache
-            _cache_invalidated = _task_apt.remove()
-            _cache_invalidated = _task_apt.update()
-            _cache_invalidated = _task_apt.install()
-            _cache_invalidated = _task_apt.install_debug()
+            _task_apt.remove()
+            _task_apt.update()
+            _task_apt.install()
+            _task_apt.install_debug()
 
             # environment variables
-            _cache_invalidated = _task_env.inject()
+            _task_env.inject()
 
             # rootfs
             _task_rootfs = TaskSshRootfs(config.image.rootfs, _task_ssh)
@@ -157,7 +156,7 @@ def _main():
             _task_services.enable()
 
             # only commit and deploy if the cached was not used
-            if _cache_invalidated:
+            if config.image.debug.commit is True:
                 print("🫸  Committing and deploying the changes...")
                 _task_ssh.run("mars commit")
                 _task_ssh.run("mars deploy")

@@ -79,10 +79,16 @@ class DebugDevice:
 class DebugConfig:
     """Configuration for debug mode."""
     enable: Optional[bool] = None
+    commit: Optional[bool] = None
     device: Optional[DebugDevice] = None
 
-    def __init__(self, enable: Optional[bool] = None, device: Optional[dict] = None):
+    def __init__(
+        self, enable: Optional[bool] = None,
+        commit: Optional[bool] = None,
+        device: Optional[dict] = None
+    ):
         self.enable = enable
+        self.commit = commit
         self.device = DebugDevice(**device) if device else None
 
 class ServicesConfig:

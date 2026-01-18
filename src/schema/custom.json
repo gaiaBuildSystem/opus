@@ -28,6 +28,10 @@
                             "type": "boolean",
                             "description": "Enable or disable debug mode."
                         },
+                        "commit": {
+                            "type": "boolean",
+                            "description": "Should the debug changes be commited at end? If true this will generate a new OSTree commit at end of the deploy command."
+                        },
                         "device": {
                             "type": "object",
                             "description": "The device to connect to for debugging. This is only used when debug mode is enabled.",
