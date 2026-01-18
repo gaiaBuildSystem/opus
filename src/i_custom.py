@@ -115,6 +115,7 @@ class ImageConfig:
     rootfs: Optional[RootfsConfig] = None
     services: Optional[ServicesConfig] = None
     kernel: Optional[KernelConfig] = None
+    env: Optional[List[dict]] = None
     security: Optional[SecurityConfig] = None
 
     def __init__(
@@ -127,6 +128,7 @@ class ImageConfig:
             rootfs: Optional[dict] = None,
             services: Optional[dict] = None,
             kernel: Optional[dict] = None,
+            env: Optional[List[dict]] = None,
             security: Optional[dict] = None
     ):
         self.machine = machine
@@ -137,6 +139,7 @@ class ImageConfig:
         self.rootfs = RootfsConfig(**rootfs) if rootfs else None
         self.services = ServicesConfig(**services) if services else None
         self.kernel = KernelConfig(**kernel) if kernel else None
+        self.env = env
         self.security = SecurityConfig(**security) if security else None
 
 class CustomSchemaInterface:
@@ -184,6 +187,8 @@ class CustomSchemaInterface:
             if self.image.kernel.out_of_tree_modules:
                 # pylint: disable=line-too-long
                 print(f"Kernel Out-of-tree modules to apply: {len(self.image.kernel.out_of_tree_modules)}")
+        if self.image.env:
+            print(f"Environment variables to set: {len(self.image.env)}")
         if self.image.security:
             print(f"Security Hardened: {self.image.security.hardened}")
         if self.image.debug:

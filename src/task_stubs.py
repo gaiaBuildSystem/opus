@@ -37,6 +37,28 @@ class TaskImage():
         raise NotImplementedError
 
 
+class TaskEnv():
+    """Tasks for the environment variables properties."""
+    _env: list
+    _skip: bool
+    _chroot: 'TaskChroot'
+
+    def __init__(
+        self,
+        env: list,
+        task_chroot: 'TaskChroot',
+        device: i_custom.DebugDevice | None = None
+    ):
+        self._env = env
+        self._skip = False
+        self._chroot = task_chroot
+        self._device = device  # Device is used for SSH tasks, if applicable
+
+    def inject(self) -> bool:
+        """Set environment variables."""
+        raise NotImplementedError
+
+
 class TaskOstree():
     """Tasks for the ostree properties."""
     _boot_dir: str
@@ -174,10 +196,15 @@ class TaskServices():
     _skip: bool
     _chroot: TaskChroot
 
-    def __init__(self, services: i_custom.ServicesConfig, task_chroot: TaskChroot):
+    def __init__(
+        self, services: i_custom.ServicesConfig,
+        task_chroot: TaskChroot,
+        debug: bool = False
+    ):
         self._services = services
         self._skip = False
         self._chroot = task_chroot
+        self._debug = debug
 
     def enable(self):
         """Enable the systemd services."""

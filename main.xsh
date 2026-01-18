@@ -33,6 +33,7 @@ from src.task_stubs import (
     TaskSshRootfs,
     TaskServices,
     TaskKernel,
+    TaskEnv,
     TaskSecurity
 )
 import src.debug as debug
@@ -45,6 +46,7 @@ source @(script_path)/src/task_ostree.xsh
 source @(script_path)/src/task_chroot.xsh
 source @(script_path)/src/task_sshchroot.xsh
 source @(script_path)/src/task_apt.xsh
+source @(script_path)/src/task_env.xsh
 source @(script_path)/src/task_rootfs.xsh
 source @(script_path)/src/task_sshrootfs.xsh
 source @(script_path)/src/task_services.xsh
@@ -128,12 +130,17 @@ def _main():
             _cache_invalidated = False
             _task_ssh = TaskSshChroot(config.image.debug.device, config.image)
             _task_apt = TaskApt(config.image.apt, _task_ssh, config.image.debug)
+            _task_env = TaskEnv(config.image.env, _task_ssh, config.image.debug)
+            _task_services = TaskServices(config.image.services, _task_ssh, config.image.debug)
 
             # uses the cache
             _cache_invalidated = _task_apt.remove()
             _cache_invalidated = _task_apt.update()
             _cache_invalidated = _task_apt.install()
             _cache_invalidated = _task_apt.install_debug()
+
+            # environment variables
+            _cache_invalidated = _task_env.inject()
 
             # rootfs
             _task_rootfs = TaskSshRootfs(config.image.rootfs, _task_ssh)
@@ -144,6 +151,10 @@ def _main():
             _task_rootfs.merge()
             _task_rootfs.copy()
             _task_rootfs.chroot_debug()
+
+            # services
+            _task_services.disable()
+            _task_services.enable()
 
             # only commit and deploy if the cached was not used
             if _cache_invalidated:
@@ -197,6 +208,10 @@ def _main():
         _task_apt.update()
         _task_apt.install()
         _task_apt.remove()
+
+        # environment variables
+        _task_env = TaskEnv(config.image.env, _task_chroot)
+        _task_env.inject()
 
         # rootfs
         _task_rootfs = TaskRootfs(config.image.rootfs, _task_chroot)

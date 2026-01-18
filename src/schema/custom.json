@@ -274,6 +274,14 @@
                     ],
                     "additionalProperties": false
                 },
+                "env": {
+                    "type": "array",
+                    "description": "A list of environment variables to set in the image.",
+                    "items": {
+                        "type": "object",
+                        "additionalProperties": {"type": "string"}
+                    }
+                },
                 "security": {
                     "description": "Options for security configuration. Like hardening options.",
                     "type": "object",
