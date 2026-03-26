@@ -3,6 +3,7 @@
 # pylint: disable=import-error
 # pylint: disable=wrong-import-order
 # pylint: disable=broad-exception-caught
+# pylint: disable=trailing-whitespace
 
 import os
 import json
@@ -17,15 +18,24 @@ class TaskOstree():
     """Tasks for the ostree properties."""
 
 
-    def __init__(self, boot_dir: str, root_dir: str, machine: str, version: str = "0.0.0"):
+    def __init__(
+        self,
+        boot_dir: str,
+        root_dir: str,
+        machine: str,
+        name: str,
+        version: str = "0.0.0"
+    ):
         self._boot_dir = boot_dir
         self._root_dir = root_dir
         self._machine = machine
+        self._name = name
         self._version = version
         self._ostree_repo = f"{self._root_dir}ostree/repo"
         self._deploy_commit_hash = ""
         self._ostree_deploy = ""
         self._mounted = False
+        self._var_symlink_target = ""
 
 
     def mount_virtualfs(self):
@@ -43,19 +53,24 @@ class TaskOstree():
             sudo mount -t proc none @(self._ostree_deploy)/proc
             sudo mount -t sysfs none @(self._ostree_deploy)/sys
 
-            # /var in the deploy is a relative symlink (../../var) that resolves
-            # correctly on the host but loops back to /var inside chroot.
-            # The bootstrap places the real var content at phobos/var/rootdirs/var/,
-            # so bind-mount that (not phobos/var/ which only contains rootdirs/).
+            # Inside a chroot the kernel clamps '..' at the chroot root, so
+            # the deploy's 'var -> ../../var' symlink loops back to itself.
+            # Replace the symlink with a real directory and bind-mount the
+            # actual var content there so the chroot sees a populated /var.
+            # The symlink is restored on umount; the commit captures it as-is
+            # (../../var) which is what OSTree expects on the device.
             _deploy_var = f"{self._ostree_deploy}var"
             _ostree_var = f"{self._root_dir}ostree/deploy/phobos/var/rootdirs/var"
 
-            if os.path.islink(_deploy_var):
-                sudo rm @(_deploy_var)
-                sudo mkdir -p @(_deploy_var)
-                print("/var symlink replaced with directory for bind mount")
+            # Save the original symlink target so it can be restored exactly
+            # on umount and committed correctly.
+            self._var_symlink_target = os.readlink(_deploy_var)
 
+            sudo chattr -i @(self._ostree_deploy.rstrip('/'))
+            sudo rm -f @(_deploy_var)
+            sudo mkdir -p @(_deploy_var)
             sudo mount --bind @(_ostree_var) @(_deploy_var)
+
             self._mounted = True
 
 
@@ -69,14 +84,12 @@ class TaskOstree():
                 sudo umount @(self._ostree_deploy)/proc
                 sudo umount @(self._ostree_deploy)/sys
 
-                # Unmount var and restore the original symlink
                 _deploy_var = f"{self._ostree_deploy}var"
                 sudo umount @(_deploy_var)
-
-                if os.path.isdir(_deploy_var) and not os.path.islink(_deploy_var):
-                    sudo rmdir @(_deploy_var)
-                    sudo ln -sf ../../var @(_deploy_var)
-                    print("/var directory unmounted and symlink restored")
+                sudo rmdir @(_deploy_var)
+                # Restore the original symlink so commit() captures the correct target.
+                sudo ln -sf @(self._var_symlink_target) @(_deploy_var)
+                sudo chattr +i @(self._ostree_deploy.rstrip('/'))
 
                 self._mounted = False
         except Exception as e:
@@ -142,6 +155,18 @@ class TaskOstree():
             summary \
             -u
 
+        # ostree admin deploy always writes 'var -> ../../var' in the new
+        # deployment regardless of what is in the commit. TorizonOS expects
+        # a different target (e.g. sysroot/ostree/deploy/phobos/var/rootdirs/var).
+        # Fix the symlink in the newly created deployment.
+        _new_commit = $(ostree rev-parse --repo=@(self._ostree_repo) @(self._machine)).strip()
+        _new_deploy = f"{self._root_dir}ostree/deploy/phobos/deploy/{_new_commit}.0/"
+        _new_deploy_var = f"{_new_deploy}var"
+        if self._var_symlink_target and os.path.islink(_new_deploy_var):
+            sudo chattr -i @(_new_deploy.rstrip('/'))
+            sudo ln -sf @(self._var_symlink_target) @(_new_deploy_var)
+            sudo chattr +i @(_new_deploy.rstrip('/'))
+
         print("📦  Deployed ostree repo", color=Color.BLACK, bg_color=BgColor.GREEN)
 
 
@@ -152,7 +177,7 @@ class TaskOstree():
         _ostree_repo_z2 = f"./.{self._machine}/ostree/repo.z2"
         _cred_path = "./credentials.zip"
         _tuf_path = f".{self._machine}"
-        _package_name = f"{self._machine}-opus"
+        _package_name = f"{self._name}"
 
         # check if the credentials file exists
         if not os.path.exists(_cred_path):
@@ -195,7 +220,7 @@ class TaskOstree():
         print("prepare metadata ...")
         _meta = {
             "commitBody": "",
-            "commitSubject": f"{self._machine}-{_commit}-opus-custom",
+            "commitSubject": f"{self._machine}-{_commit}-{self._name}",
             "ostreeMetadata": {
                 "gaia.arch": "unknown",
                 "gaia.distro": "phobos",

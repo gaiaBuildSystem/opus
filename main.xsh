@@ -186,6 +186,7 @@ def _main():
             boot_dir=_task_image._boot_dir,
             root_dir=_task_image._root_dir,
             machine=config.image.machine,
+            name=config.image.name,
             version=config.image.version
         )
         _task_ostree.get_deployed_commit()

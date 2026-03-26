@@ -21,8 +21,6 @@ class TaskChroot():
         # disable the chattr
         sudo chattr -i @(self._root_dir)
 
-        # self.run("rm -rf /var")
-        # self.run("mkdir -p /var/log/apt")
         self.run("chmod 1777 /tmp")
         self.run("rm -rf /etc/resolv.conf")
         self.run('echo "nameserver 8.8.8.8" > /etc/resolv.conf')

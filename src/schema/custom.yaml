@@ -1,6 +1,7 @@
 
 image:
   machine: rpi5b
+  name: my-package
   version: 0.0.0
   increase: 40%
   image_path: ./rpi5b.img

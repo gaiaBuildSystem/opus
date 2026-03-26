@@ -114,6 +114,7 @@ class SecurityConfig:
 class ImageConfig:
     """Detailed configuration for the image."""
     machine: str
+    name: str
     version: str
     image_path: Optional[str] = None
     increase: Optional[str] = None
@@ -128,6 +129,7 @@ class ImageConfig:
     def __init__(
             self,
             machine: str,
+            name: str,
             version: str,
             image_path: Optional[str] = None,
             increase: Optional[str] = None,
@@ -140,6 +142,7 @@ class ImageConfig:
             security: Optional[dict] = None
     ):
         self.machine = machine
+        self.name = name
         self.version = version
         self.image_path = image_path
         self.increase = increase
@@ -166,6 +169,7 @@ class CustomSchemaInterface:
         Generate a summary of the configuration.
         """
         print(f"Machine: {self.image.machine}")
+        print(f"Name: {self.image.name}")
         print(f"Version: {self.image.version}")
         if self.image.apt:
             if self.image.apt.install:
