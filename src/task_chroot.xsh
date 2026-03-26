@@ -21,8 +21,8 @@ class TaskChroot():
         # disable the chattr
         sudo chattr -i @(self._root_dir)
 
-        self.run("rm -rf /var")
-        self.run("mkdir -p /var/log/apt")
+        # self.run("rm -rf /var")
+        # self.run("mkdir -p /var/log/apt")
         self.run("chmod 1777 /tmp")
         self.run("rm -rf /etc/resolv.conf")
         self.run('echo "nameserver 8.8.8.8" > /etc/resolv.conf')
@@ -35,8 +35,8 @@ class TaskChroot():
         print("🔍  Reconfiguring deploy...", color=Color.BLACK, bg_color=BgColor.BLUE)
 
         # the /var was messed up, so we need to fix it
-        self.run("rm -rf /var")
-        self.run("ln -sf sysroot/ostree/deploy/phobos/var/rootdirs/var /var")
+        # self.run("rm -rf /var")
+        # self.run("ln -sf sysroot/ostree/deploy/phobos/var/rootdirs/var /var")
 
         # the /etc need to be merged to the /usr/etc
         self.run("rsync -a --delete /etc/ /usr/etc/")

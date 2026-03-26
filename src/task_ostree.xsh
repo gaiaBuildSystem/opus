@@ -42,6 +42,20 @@ class TaskOstree():
             sudo mount -o bind /dev/pts @(self._ostree_deploy)/dev/pts
             sudo mount -t proc none @(self._ostree_deploy)/proc
             sudo mount -t sysfs none @(self._ostree_deploy)/sys
+
+            # /var in the deploy is a relative symlink (../../var) that resolves
+            # correctly on the host but loops back to /var inside chroot.
+            # The bootstrap places the real var content at phobos/var/rootdirs/var/,
+            # so bind-mount that (not phobos/var/ which only contains rootdirs/).
+            _deploy_var = f"{self._ostree_deploy}var"
+            _ostree_var = f"{self._root_dir}ostree/deploy/phobos/var/rootdirs/var"
+
+            if os.path.islink(_deploy_var):
+                sudo rm @(_deploy_var)
+                sudo mkdir -p @(_deploy_var)
+                print("/var symlink replaced with directory for bind mount")
+
+            sudo mount --bind @(_ostree_var) @(_deploy_var)
             self._mounted = True
 
 
@@ -54,6 +68,16 @@ class TaskOstree():
                 sudo umount @(self._ostree_deploy)/dev
                 sudo umount @(self._ostree_deploy)/proc
                 sudo umount @(self._ostree_deploy)/sys
+
+                # Unmount var and restore the original symlink
+                _deploy_var = f"{self._ostree_deploy}var"
+                sudo umount @(_deploy_var)
+
+                if os.path.isdir(_deploy_var) and not os.path.islink(_deploy_var):
+                    sudo rmdir @(_deploy_var)
+                    sudo ln -sf ../../var @(_deploy_var)
+                    print("/var directory unmounted and symlink restored")
+
                 self._mounted = False
         except Exception as e:
             print(f"Error unmounting virtual fs: {e}", color=Color.YELLOW)
@@ -196,6 +220,9 @@ class TaskOstree():
                 --credentials @(_cred_path) \
                 --repo @(_tuf_path) \
                 --verbose
+
+            print("Initialized TUF repository", color=Color.BLACK, bg_color=BgColor.GREEN)
+
         except Exception as e:
             print(
                 "Repository already initialized, skipping init step ...",
