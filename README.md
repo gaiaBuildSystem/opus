@@ -179,3 +179,12 @@ security:
 ```
 
 - `hardened` (boolean): Enable or disable security hardening (required for production images)
+
+## Contributing
+
+To build the `opus` container image:
+
+```bash
+cd .devcontainer
+docker compose build
+```
