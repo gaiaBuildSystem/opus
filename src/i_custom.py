@@ -115,6 +115,7 @@ class ImageConfig:
     """Detailed configuration for the image."""
     machine: str
     version: str
+    image_path: Optional[str] = None
     increase: Optional[str] = None
     debug: Optional[DebugConfig] = None
     apt: Optional[AptConfig] = None
@@ -128,6 +129,7 @@ class ImageConfig:
             self,
             machine: str,
             version: str,
+            image_path: Optional[str] = None,
             increase: Optional[str] = None,
             debug: Optional[dict] = None,
             apt: Optional[dict] = None,
@@ -139,6 +141,7 @@ class ImageConfig:
     ):
         self.machine = machine
         self.version = version
+        self.image_path = image_path
         self.increase = increase
         self.debug = DebugConfig(**debug) if debug else None
         self.apt = AptConfig(**apt) if apt else None

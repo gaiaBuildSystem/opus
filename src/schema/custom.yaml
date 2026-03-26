@@ -3,6 +3,7 @@ image:
   machine: rpi5b
   version: 0.0.0
   increase: 40%
+  image_path: ./rpi5b.img
   debug:
     enable: true
     commit: true

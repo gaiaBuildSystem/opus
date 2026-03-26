@@ -55,7 +55,54 @@ class TaskImage():
 
 
     def download(self):
-        """Download the image."""
+        """Download the image or use local image if image_path is provided."""
+        # Check if image_path is provided
+        if self.config.image_path:
+            print("📂  Using local image...", color=Color.BLACK, bg_color=BgColor.BLUE)
+
+            # Ensure the path is relative to workspace (for container compatibility)
+            _source_path = os.path.abspath(self.config.image_path)
+            print(f"Image path: {_source_path}")
+
+            # Validate that the image filename matches the machine name
+            _expected_filename = f"{self.config.machine}.img"
+            _actual_filename = os.path.basename(_source_path)
+            if _actual_filename != _expected_filename:
+                Error_Out(
+                    f"Image filename must match the machine name. Expected: {_expected_filename}, but got: {_actual_filename}",
+                    Error.EINVAL
+                )
+
+            _target_dir = f"./.{self.config.machine}"
+            _target_img = f"./.{self.config.machine}/{self.config.machine}-ota-{self._version_path}.img"
+
+            # Ensure the target directory exists
+            if not os.path.exists(_target_dir):
+                os.makedirs(_target_dir)
+
+            # Check if source image exists
+            if not os.path.exists(_source_path):
+                Error_Out(
+                    f"Image file not found: {_source_path}",
+                    Error.ENOFOUND
+                )
+
+            # If target doesn't exist, copy the image
+            if not os.path.exists(_target_img):
+                print(f"Copying image from {self.config.image_path} to {_target_img}...")
+                cp @(self.config.image_path) @(_target_img)
+
+                print("Image copied successfully!", color=Color.BLACK, bg_color=BgColor.GREEN)
+            else:
+                print(
+                    f"Image {_target_img} already exists. Use --no-cache to force copy.",
+                    color=Color.BLACK,
+                    bg_color=BgColor.YELLOW
+                )
+
+            return
+
+        # Original download logic
         print("☁️  Downloading image...", color=Color.BLACK, bg_color=BgColor.BLUE)
         _url = f"{self._base_url}{self.config.machine}-ota-{self._version_path}.img.tar.xz"
         print(f"Image URL: {_url}")
