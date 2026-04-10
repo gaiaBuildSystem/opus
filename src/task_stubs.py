@@ -101,7 +101,7 @@ class TaskOstree():
         """Deploy the ostree repo."""
         raise NotImplementedError
 
-    def push_to_torizon(self):
+    def push_to_torizon(self, arch: str):
         """Push the ostree repo to Torizon."""
         raise NotImplementedError
 
@@ -115,6 +115,10 @@ class TaskChroot():
 
     def reconfigure(self):
         """Reconfigure the chroot config mess."""
+        raise NotImplementedError
+
+    def run_ret(self, cmd: str) -> str:
+        """Run a command in chroot and return the output."""
         raise NotImplementedError
 
     def run(self, cmd: str) -> int:

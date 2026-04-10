@@ -170,7 +170,7 @@ class TaskOstree():
         print("📦  Deployed ostree repo", color=Color.BLACK, bg_color=BgColor.GREEN)
 
 
-    def push_to_torizon(self):
+    def push_to_torizon(self, arch):
         """Push the ostree repo to Torizon."""
         print("📦  Pushing ostree repo to Torizon...", color=Color.BLACK, bg_color=BgColor.BLUE)
 
@@ -222,7 +222,7 @@ class TaskOstree():
             "commitBody": "",
             "commitSubject": f"{self._machine}-{_commit}-{self._name}",
             "ostreeMetadata": {
-                "gaia.arch": "unknown",
+                "gaia.arch": f"{arch}",
                 "gaia.distro": "phobos",
                 "gaia.distro-codename": "lion-killer",
                 "gaia.image": "phobos-ota-opus",
@@ -268,7 +268,7 @@ class TaskOstree():
             --repo @(_tuf_path) \
             --name @(_package_name) \
             --format OSTREE \
-            --version @(self._version) \
+            --version @(f"{self._version}-{self._machine}") \
             --length 0 \
             --sha256 @(_commit) \
             --hardwareids @(self._machine) \

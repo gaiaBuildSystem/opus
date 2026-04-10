@@ -48,6 +48,24 @@ class TaskChroot():
         self.run("rsync -a /usr/etc/ /etc/")
 
 
+    def run_ret(self, cmd: str)-> str:
+        """Run a command in chroot and return the output."""
+        print(f"run command: {cmd}")
+
+        # run the command in chroot
+        _escaped_cmd = shlex.quote(cmd)
+        _cmd = f"chroot {self._root_dir} /bin/bash -c {_escaped_cmd}"
+        print(_cmd)
+
+        _cmd_args = shlex.split(_cmd)
+
+        # run the command and return the output
+        _ret = ""
+        _ret = $(sudo @(_cmd_args))
+
+        return _ret
+
+
     def run(self, cmd: str)-> int:
         """Run a command in chroot."""
         print(f"run command: {cmd}")

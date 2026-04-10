@@ -231,11 +231,12 @@ def _main():
 
         # finally commit the changes
         _task_chroot.reconfigure()
+        _arch = _task_chroot.run_ret("arch")
         _task_ostree.umount_virtualfs()
         _task_ostree.commit()
         _task_ostree.deploy()
         DEPLOY_SUCCESS = True
-        _task_ostree.push_to_torizon()
+        _task_ostree.push_to_torizon(_arch)
 
     # pylint: disable=broad-exception-caught
     except Exception as e:
