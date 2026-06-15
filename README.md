@@ -9,6 +9,14 @@
 
 Opus is the PhobOS customization and development tool. With Opus you can easily set up and manage a base PhobOS image and transform it into your custom OS optimized for your application.
 
+## Installation
+
+To install Opus, run the following command:
+
+```bash
+curl -L https://raw.githubusercontent.com/gaiaBuildSystem/opus/refs/heads/main/.scripts/install-opus.sh | bash
+```
+
 ## Customizing PhobOS
 
 PhobOS can be customized through a `custom.yaml` configuration file. Below is a comprehensive guide to all available customization options.
@@ -69,6 +77,11 @@ apt:
   install:
     - package1
     - package2
+  install_machine:
+    intel:
+      - package-for-intel
+    rpi5b:
+      - package-for-rpi5b
   install_debug:
     - debug-tool1
     - debug-tool2
@@ -77,6 +90,7 @@ apt:
 ```
 
 - `install` (array): Packages to install via apt
+- `install_machine` (object): Machine-specific packages keyed by `image.machine`
 - `install_debug` (array): Debug-only packages (installed only on connected device)
 - `remove` (array): Packages to remove via apt
 
