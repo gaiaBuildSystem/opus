@@ -205,7 +205,8 @@ def _main():
         _task_kernel.devicetree_overlays()
 
         # apt
-        _task_apt = TaskApt(config.image.apt, _task_chroot, config.image.machine)
+        _task_apt = TaskApt(config.image.apt, _task_chroot)
+        _task_apt._machine = config.image.machine
         _task_apt.update()
         _task_apt.install()
         _task_apt.remove()
