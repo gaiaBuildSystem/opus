@@ -151,6 +151,7 @@ def _main():
             _task_rootfs.merge()
             _task_rootfs.copy()
             _task_rootfs.chroot_debug()
+            _task_rootfs.chroot()
 
             # services
             _task_services.disable()
@@ -217,10 +218,12 @@ def _main():
 
         # rootfs
         _task_rootfs = TaskRootfs(config.image.rootfs, _task_chroot)
+        _task_rootfs._machine = config.image.machine
         _task_rootfs.mkdir()
         _task_rootfs.remove()
         _task_rootfs.merge()
         _task_rootfs.copy()
+        _task_rootfs.chroot()
 
         # services
         _task_services = TaskServices(config.image.services, _task_chroot)

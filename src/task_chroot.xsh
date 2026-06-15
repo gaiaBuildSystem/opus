@@ -13,7 +13,8 @@ class TaskChroot():
     """Tasks for the chroot properties."""
 
 
-    def __init__(self, root_dir: str):
+    def __init__(self, root_dir: str, machine: str = ""):
+        self._machine = machine
         self._root_dir = root_dir
 
         print("Fixups for chroot ...")
@@ -66,13 +67,21 @@ class TaskChroot():
         return _ret
 
 
+    def copy(self, path: str):
+        """Copy a file or folder from source to the rootfs."""
+        print(f"Copying the file [{path}] to the rootfs...")
+
+        # this copy to the /root user dir
+        sudo cp -r @(f"{path}") @(f"{self._root_dir}/root/")
+
+
     def run(self, cmd: str)-> int:
         """Run a command in chroot."""
         print(f"run command: {cmd}")
 
         # run the command in chroot
         _escaped_cmd = shlex.quote(cmd)
-        _cmd = f"chroot {self._root_dir} /bin/bash -c {_escaped_cmd}"
+        _cmd = f"MACHINE={self._machine} chroot {self._root_dir} /bin/bash -c {_escaped_cmd}"
         print(_cmd)
 
         _cmd_args = shlex.split(_cmd)

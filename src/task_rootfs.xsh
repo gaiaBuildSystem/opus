@@ -132,6 +132,22 @@ class TaskRootfs():
             print("No rootfs configurations to chroot.")
             return
 
+        for _script in _to_chroot:
+            print(f"Running script {_script} in the image rootfs.")
+
+            for _script in self._rootfs.chroot:
+                print(f"Running debug script: {_script}")
+
+                # check if the script exists
+                if not os.path.exists(_script):
+                    raise FileNotFoundError(
+                        f"chroot [{_script}] does not exist. Please check the path."
+                    )
+
+                self._chroot.copy(_script)
+                self._chroot.run(f"chmod +x /root/{os.path.basename(_script)}")
+                self._chroot.run(f"cd /root && ./{os.path.basename(_script)}")
+
         raise NotImplementedError(
             "Chrooting into the rootfs is not implemented yet. Please check the code."
         )

@@ -139,8 +139,20 @@ class TaskSshRootfs():
             print("No rootfs configurations to run chroot scripts commands.")
             return
 
-        if self._rootfs.chroot_debug is not None and len(self._rootfs.chroot_debug) > 0:
-            print("⚠️  chroot scripts does not run under production task, skipping ...")
+        if len(self._rootfs.chroot) > 0:
+            for _debug_script in self._rootfs.chroot:
+                print(f"Running debug script: {_debug_script}")
+
+                # check if the script exists
+                if not os.path.exists(_debug_script):
+                    raise FileNotFoundError(
+                        f"chroot [{_debug_script}] does not exist. Please check the path."
+                    )
+
+                self._chroot.copy(_debug_script)
+                self._chroot.run(f"chmod +x /root/{os.path.basename(_debug_script)}")
+                self._chroot.run(f"cd /root && ./{os.path.basename(_debug_script)}")
+
         else:
             print("No chroot configurations to run scripts commands.")
 

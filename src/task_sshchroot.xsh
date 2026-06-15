@@ -16,6 +16,7 @@ class TaskSshChroot():
 
     def __init__(self, device: i_custom.DebugDevice, image: i_custom.ImageConfig):
         self._device = device
+        self._machine = image.machine
 
         # check the match machine
         _remote_machine = $(
@@ -89,7 +90,7 @@ class TaskSshChroot():
 
         # run the command in chroot
         _escaped_cmd = shlex.quote(cmd)
-        _cmd = f"/bin/bash -c {_escaped_cmd}"
+        _cmd = f"MACHINE={self._machine} /bin/bash -c {_escaped_cmd}"
         print(_cmd)
 
         # run the command
