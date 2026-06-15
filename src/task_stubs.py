@@ -136,12 +136,14 @@ class TaskApt():
         self,
         apt: i_custom.AptConfig,
         task_chroot: TaskChroot,
-        device: i_custom.DebugDevice | None = None
+        debug: bool = False,
+        machine: str = ""
     ):
         self._apt = apt
         self._skip = False
         self._chroot = task_chroot
-        self._device = device  # Device is used for SSH tasks, if applicable
+        self._debug = debug
+        self._machine = machine
 
     def update(self) -> bool:
         """Update the apt packages."""

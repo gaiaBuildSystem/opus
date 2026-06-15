@@ -1,22 +1,25 @@
 """Interface for custom schema."""
 import os
-from typing import List, Optional
+from typing import Dict, List, Optional
 from jsonschema import validate # type: ignore
 import yaml # type: ignore
 
 class AptConfig:
     """Configuration for apt package management."""
     install: Optional[List[str]] = None
+    install_machine: Optional[Dict[str, List[str]]] = None
     install_debug: Optional[List[str]] = None
     remove: Optional[List[str]] = None
 
     def __init__(
         self,
         install: Optional[List[str]] = None,
+        install_machine: Optional[Dict[str, List[str]]] = None,
         install_debug: Optional[List[str]] = None,
         remove: Optional[List[str]] = None
     ):
         self.install = install
+        self.install_machine = install_machine
         self.install_debug = install_debug
         self.remove = remove
 
@@ -174,6 +177,10 @@ class CustomSchemaInterface:
         if self.image.apt:
             if self.image.apt.install:
                 print(f"Pkgs to Install: {len(self.image.apt.install)}")
+            if self.image.apt.install_machine:
+                _machine_pkgs = self.image.apt.install_machine.get(self.image.machine, [])
+                if _machine_pkgs:
+                    print(f"Pkgs to Install ({self.image.machine}): {len(_machine_pkgs)}")
             if self.image.apt.install_debug:
                 print(f"Pkgs to Install (Debug): {len(self.image.apt.install_debug)}")
             if self.image.apt.remove:

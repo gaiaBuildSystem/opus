@@ -26,14 +26,36 @@ class TaskApt():
         self,
         apt: i_custom.AptConfig,
         task_chroot: TaskChroot,
-        debug: bool = False
+        debug: bool = False,
+        machine: str = ""
     ):
         self._apt = apt
         self._skip = apt is None
         self._chroot = task_chroot
         self._debug = debug
+        self._machine = machine
 
         utils.create_cache("apt")
+
+
+    def _resolve_install_packages(self) -> list[str]:
+        """Resolve apt packages including machine-specific entries."""
+        _default = getattr(self._apt, "install", []) or []
+        _machine_map = getattr(self._apt, "install_machine", {}) or {}
+        _machine_specific = []
+
+        if self._machine and isinstance(_machine_map, dict):
+            _machine_specific = _machine_map.get(self._machine, []) or []
+            if len(_machine_specific) > 0:
+                print(f"Applying machine-specific apt packages for '{self._machine}'.")
+
+        # Keep order stable and avoid repeated packages.
+        _resolved = []
+        for _pkg in [*_default, *_machine_specific]:
+            if _pkg not in _resolved:
+                _resolved.append(_pkg)
+
+        return _resolved
 
 
     def update(self) -> bool:
@@ -72,14 +94,14 @@ class TaskApt():
             print("Using cache for apt packages installed.")
             return False
 
-        _to_install = getattr(self._apt, "install", []) or []
+        _to_install = self._resolve_install_packages()
 
         # run the command in chroot
         if len(_to_install) == 0:
             print("No apt packages to install.")
             return False
 
-        _cmd = f"apt-get install -y {' '.join(self._apt.install)}"
+        _cmd = f"apt-get install -y {' '.join(_to_install)}"
         print(_cmd)
 
         self._chroot.run(_cmd)
