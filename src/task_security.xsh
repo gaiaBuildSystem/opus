@@ -7,9 +7,9 @@
 
 import sys
 import secrets
-import src.i_custom as i_custom
+import src.i_custom as i_custom # pylint: disable=no-name-in-module
 from pathlib import Path
-from src.task_stubs import TaskChroot
+from src.task_stubs import TaskChroot # pylint: disable=no-name-in-module
 # we are redefining the print to have colors
 # pylint: disable=redefined-builtin
 from torizon_templates_utils.colors import print, Color, BgColor

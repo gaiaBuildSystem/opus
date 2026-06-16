@@ -4,7 +4,7 @@ import shlex
 from torizon_templates_utils.colors import print, Color, BgColor
 
 # pylint: disable=import-error
-import src.i_custom as i_custom
+import src.i_custom as i_custom # pylint: disable=no-name-in-module
 
 
 class TaskSshChroot():

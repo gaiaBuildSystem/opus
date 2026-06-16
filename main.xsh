@@ -195,7 +195,10 @@ def _main():
         _task_ostree.mount_virtualfs()
 
         # chroot
-        _task_chroot = TaskChroot(_task_ostree._ostree_deploy)
+        _task_chroot = TaskChroot(
+            _task_ostree._ostree_deploy,
+            config.image.machine
+        )
 
         # kernel need to be build from source so, let's do it first
         _task_kernel = TaskKernel(config.image.kernel)
@@ -206,8 +209,12 @@ def _main():
         _task_kernel.devicetree_overlays()
 
         # apt
-        _task_apt = TaskApt(config.image.apt, _task_chroot)
-        _task_apt._machine = config.image.machine
+        _task_apt = TaskApt(
+            config.image.apt,
+            _task_chroot,
+            False,
+            config.image.machine
+        )
         _task_apt.update()
         _task_apt.install()
         _task_apt.remove()
@@ -218,7 +225,6 @@ def _main():
 
         # rootfs
         _task_rootfs = TaskRootfs(config.image.rootfs, _task_chroot)
-        _task_rootfs._machine = config.image.machine
         _task_rootfs.mkdir()
         _task_rootfs.remove()
         _task_rootfs.merge()

@@ -3,6 +3,7 @@
 # pylint: disable=import-error
 # pylint: disable=wrong-import-order
 
+import os
 import shlex
 # we are redefining the print to have colors
 # pylint: disable=redefined-builtin
@@ -16,11 +17,22 @@ class TaskChroot():
     def __init__(self, root_dir: str, machine: str = ""):
         self._machine = machine
         self._root_dir = root_dir
+        self._var_dir = os.path.realpath(f"{root_dir}../../var")
+        self._rootdirs = os.path.join(self._var_dir, "rootdirs")
+        # The rootfs (sysroot) sits 5 levels above the deploy dir:
+        # {rootfs}/ostree/deploy/{osname}/deploy/{hash}.0/
+        self._sysroot_dir = os.path.realpath(f"{root_dir}../../../../../")
 
         print("Fixups for chroot ...")
 
         # disable the chattr
         sudo chattr -i @(self._root_dir)
+
+        # Replicate what ostree-prepare-root does at runtime: bind-mount the
+        # rootfs as /sysroot so the deploy's root-level symlinks (home, var,
+        # media, etc.) which use "sysroot/ostree/deploy/phobos/var/rootdirs/..."
+        # resolve correctly inside the chroot without modifying them.
+        sudo mount --bind @(self._sysroot_dir) @(f"{self._root_dir}sysroot")
 
         self.run("chmod 1777 /tmp")
         self.run("rm -rf /etc/resolv.conf")
@@ -33,13 +45,16 @@ class TaskChroot():
         """Reconfigure the chroot config mess."""
         print("🔍  Reconfiguring deploy...", color=Color.BLACK, bg_color=BgColor.BLUE)
 
-        # the /var was messed up, so we need to fix it
-        # self.run("rm -rf /var")
-        # self.run("ln -sf sysroot/ostree/deploy/phobos/var/rootdirs/var /var")
-
-        # the /etc need to be merged to the /usr/etc
+        # Merge live /etc into /usr/etc so the new commit carries the correct
+        # configuration template; ostree admin deploy recreates /etc via 3-way merge.
         self.run("rsync -a --delete /etc/ /usr/etc/")
         self.run("rm -rf /etc")
+
+        # Unmount the sysroot bind-mount used for the chroot session.
+        # All root-level symlinks (home, var, media, ...) are left untouched
+        # so they are committed with their original "sysroot/..." targets.
+        # umount_virtualfs() handles /var cleanup (unmount + rmdir + symlink restore).
+        sudo umount @(f"{self._root_dir}sysroot")
 
 
     def rollback_etc(self):
@@ -72,7 +87,7 @@ class TaskChroot():
         print(f"Copying the file [{path}] to the rootfs...")
 
         # this copy to the /root user dir
-        sudo cp -r @(f"{path}") @(f"{self._root_dir}/root/")
+        sudo cp -r @(f"{path}") @(f"{self._rootdirs}/root/")
 
 
     def run(self, cmd: str)-> int:

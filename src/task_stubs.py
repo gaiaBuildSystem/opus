@@ -1,6 +1,6 @@
 """Task stubs for the image properties."""
 # pylint: disable=import-error
-import src.i_custom as i_custom
+import src.i_custom as i_custom # pylint: disable=no-name-in-module
 
 class TaskImage():
     """Tasks for the image properties."""
@@ -109,9 +109,11 @@ class TaskOstree():
 class TaskChroot():
     """Tasks for the chroot properties."""
     _root_dir: str
+    _machine: str
 
-    def __init__(self, root_dir: str):
+    def __init__(self, root_dir: str, machine: str = ""):
         self._root_dir = root_dir
+        self._machine = machine
 
     def reconfigure(self):
         """Reconfigure the chroot config mess."""
@@ -171,13 +173,11 @@ class TaskRootfs():
     _rootfs: i_custom.RootfsConfig
     _skip: bool
     _chroot: TaskChroot
-    _machine: str
 
-    def __init__(self, rootfs: i_custom.RootfsConfig, task_chroot: TaskChroot, machine: str = ""):
+    def __init__(self, rootfs: i_custom.RootfsConfig, task_chroot: TaskChroot):
         self._rootfs = rootfs
         self._skip = False
         self._chroot = task_chroot
-        self._machine = machine
 
     def remove(self):
         """Remove the rootfs configurations."""

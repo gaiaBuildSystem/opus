@@ -41,10 +41,6 @@ This will download the corresponding PhobOS base image, from the version set, fr
 
 ### Optional Configuration Sections
 
-#### Image Size
-
-- `increase` (string): Percentage to increase the image size by (e.g., '10%')
-
 #### Debug Mode
 
 Configure debug mode for development on connected devices:

@@ -84,6 +84,13 @@ class TaskOstree():
                 sudo umount @(self._ostree_deploy)/proc
                 sudo umount @(self._ostree_deploy)/sys
 
+                # Clean up the sysroot bind-mount added by TaskChroot if it is
+                # still active (reconfigure() normally removes it; this covers
+                # the error/rollback path so the image can be cleanly unmounted).
+                _deploy_sysroot = f"{self._ostree_deploy}sysroot"
+                if os.path.ismount(_deploy_sysroot):
+                    sudo umount @(_deploy_sysroot)
+
                 _deploy_var = f"{self._ostree_deploy}var"
                 sudo umount @(_deploy_var)
                 sudo rmdir @(_deploy_var)
@@ -117,10 +124,41 @@ class TaskOstree():
         return _commit
 
 
+    def _adjust_min_free_space(self):
+        """Dynamically lower min-free-space-percent to what the commit actually needs."""
+        _result = subprocess.check_output(
+            ["sudo", "du", "-sb", self._ostree_deploy],
+            text=True
+        )
+        _deploy_bytes = int(_result.split()[0])
+
+        _stat = os.statvfs(self._ostree_repo)
+        _total_bytes = _stat.f_blocks * _stat.f_bsize
+        _free_bytes = _stat.f_bavail * _stat.f_bsize
+
+        _free_after = max(0, _free_bytes - _deploy_bytes)
+        _free_pct_after = int(_free_after * 100 // _total_bytes) if _total_bytes > 0 else 0
+        _safe_pct = max(0, _free_pct_after - 1)
+
+        print(
+            f"Free: {_free_bytes // (1024*1024)} MB  "
+            f"Deploy size: {_deploy_bytes // (1024*1024)} MB  "
+            f"Setting min-free-space-percent={_safe_pct}%"
+        )
+
+        sudo ostree \
+            config \
+            --repo=@(self._ostree_repo) \
+            set core.min-free-space-percent \
+            @(str(_safe_pct))
+
+
     def commit(self):
         """Commit the ostree repo."""
         print("📦  Committing changes to ostree repo...", color=Color.BLACK, bg_color=BgColor.BLUE)
         print("please wait...")
+
+        self._adjust_min_free_space()
 
         sudo ostree \
             --repo=@(self._ostree_repo) \

@@ -7,7 +7,9 @@
 import os
 import re
 import subprocess
-import src.i_custom as i_custom
+# Even thouhg the pylint complains about the src. it need to be this way
+# becuase we are sourcing this file in the main.xsh
+import src.i_custom as i_custom # pylint: disable=no-name-in-module
 from torizon_templates_utils.errors import Error_Out, Error
 # we are redefining the print to have colors
 # pylint: disable=redefined-builtin
@@ -30,6 +32,8 @@ class TaskImage():
         # TODO: I'm adding this hard coded for now
         # self._version_path = self.config.version.replace(".", "-")
         self._version_path = "0-0-0"
+        self._image_file_raw = f"{self.config.name}-{self.config.machine}-ota-{self._version_path}.img"
+        self._image_file = f"./.{self.config.machine}/{self._image_file_raw}"
 
 
     def _extract(self):
@@ -37,9 +41,9 @@ class TaskImage():
         print("📦  Extracting image...", color=Color.BLACK, bg_color=BgColor.BLUE)
 
         # pylint: disable=line-too-long
-        _archive_file = f"./.{self.config.machine}/{self.config.machine}-ota-{self._version_path}.img.tar.xz"
+        _archive_file = f"{self._image_file}.tar.xz"
         _target_dir = f"./.{self.config.machine}"
-        _target_img = f"./.{self.config.machine}/{self.config.machine}-ota-{self._version_path}.img"
+        _target_img = f"{self._image_file}"
 
         if os.path.exists(_target_img):
             print(f"Image {_target_img} already exists. Use --no-cache to force a fresh download/extract.", color=Color.BLACK, bg_color=BgColor.YELLOW)
@@ -65,16 +69,15 @@ class TaskImage():
             print(f"Image path: {_source_path}")
 
             # Validate that the image filename matches the machine name
-            _expected_filename = f"{self.config.machine}.img"
             _actual_filename = os.path.basename(_source_path)
-            if _actual_filename != _expected_filename:
+            if _actual_filename.find(self.config.machine) == -1:
                 Error_Out(
-                    f"Image filename must match the machine name. Expected: {_expected_filename}, but got: {_actual_filename}",
+                    f"Image filename {_actual_filename} does not contain the machine name '{self.config.machine}'. Have you sure you provided the correct image_path?",
                     Error.EINVAL
                 )
 
             _target_dir = f"./.{self.config.machine}"
-            _target_img = f"./.{self.config.machine}/{self.config.machine}-ota-{self._version_path}.img"
+            _target_img = f"{self._image_file}"
 
             # Ensure the target directory exists
             if not os.path.exists(_target_dir):
@@ -104,12 +107,12 @@ class TaskImage():
 
         # Original download logic
         print("☁️  Downloading image...", color=Color.BLACK, bg_color=BgColor.BLUE)
-        _url = f"{self._base_url}{self.config.machine}-ota-{self._version_path}.img.tar.xz"
+        _url = f"{self._base_url}{self._image_file_raw}.tar.xz"
         print(f"Image URL: {_url}")
 
         # only if the file does not exist
         if not os.path.exists(
-            f"./.{self.config.machine}/{self.config.machine}-ota-{self._version_path}.img.tar.xz"
+            f"{self._image_file}.tar.xz"
         ):
             print("Downloading image...")
 
@@ -130,65 +133,9 @@ class TaskImage():
         self._extract()
 
 
-    def _expand(self):
-        """Expand the image. OSTree needs 3% of the image size to be free."""
-        # calc % of the image size
-        _pctg_str = self.config.increase
-
-        # check if the image is already expanded
-        if os.path.exists(f"./.{self.config.machine}/.image.lock"):
-            with open(f"./.{self.config.machine}/.image.lock", "r", encoding="utf-8") as f:
-                _pctg_str_stored = f.read()
-                if _pctg_str_stored == _pctg_str:
-                    print(
-                        f"Image already expanded to {_pctg_str_stored}. No need to expand.",
-                        color=Color.BLACK,
-                        bg_color=BgColor.YELLOW
-                    )
-                    return
-
-        if _pctg_str is not None:
-            print(f"📏  Expanding image in {_pctg_str}...", color=Color.BLACK, bg_color=BgColor.BLUE)
-
-            # get the str% as int
-            _pctg_regex = re.search(r'\d+', str(_pctg_str))
-            _pctg = 0
-            if _pctg_regex:
-                _pctg = int(_pctg_regex.group(0))
-
-            # get the size of the image
-            if _pctg > 0:
-                _image_size = os.path.getsize(
-                    f"./.{self.config.machine}/{self.config.machine}-ota-{self._version_path}.img"
-                )
-                _expand_size = int(_image_size * (_pctg / 100))
-                print(f"Image size: {_image_size} bytes")
-                print(f"Expand size: {_expand_size} bytes")
-
-                # expand the image
-                qemu-img \
-                    resize \
-                    -f raw \
-                    @(f"./.{self.config.machine}/{self.config.machine}-ota-{self._version_path}.img") \
-                    +@(_expand_size)B
-
-                # update the partition table
-                sudo parted \
-                    -s \
-                    @(f"./.{self.config.machine}/{self.config.machine}-ota-{self._version_path}.img") \
-                    resizepart 2 100%
-
-                # add a lock so the system knows that the image was already expanded
-                with open(f"./.{self.config.machine}/.image.lock", "w", encoding="utf-8") as f:
-                    f.write(f"{_pctg_str}")
-            else:
-                print("Image increase size is 0%. No need to expand.", color=Color.BLACK, bg_color=BgColor.YELLOW)
-
-
     def mount(self):
         """Mount the image."""
         print("📁  Mounting image...", color=Color.BLACK, bg_color=BgColor.BLUE)
-        self._image_file = f"./.{self.config.machine}/{self.config.machine}-ota-{self._version_path}.img"
         _mnt_dir = f"./.{self.config.machine}/mnt/"
         self._boot_dir = f"./.{self.config.machine}/mnt/boot/"
         self._root_dir = f"./.{self.config.machine}/mnt/rootfs/"
@@ -199,9 +146,6 @@ class TaskImage():
             @(self._boot_dir)
         mkdir -p \
             @(self._root_dir)
-
-        # before to bind the partitions, we need to expand the image
-        self._expand()
 
         _kpartxret = ""
         _kpartxret=$(sudo kpartx -av @(self._image_file))

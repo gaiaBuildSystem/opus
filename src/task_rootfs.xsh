@@ -16,8 +16,10 @@ from torizon_templates_utils.colors import print, Color, BgColor
 __script_path = Path(__file__).resolve().parent
 sys.path.append(str(__script_path))
 
-import src.i_custom as i_custom
-from src.task_stubs import TaskChroot
+# Even thouhg the pylint complains about the src. it need to be this way
+# becuase we are sourcing this file in the main.xsh
+import src.i_custom as i_custom # pylint: disable=no-name-in-module
+from src.task_stubs import TaskChroot # pylint: disable=no-name-in-module
 
 source @(__script_path)/task_chroot.xsh
 
@@ -148,9 +150,9 @@ class TaskRootfs():
                 self._chroot.run(f"chmod +x /root/{os.path.basename(_script)}")
                 self._chroot.run(f"cd /root && ./{os.path.basename(_script)}")
 
-        raise NotImplementedError(
-            "Chrooting into the rootfs is not implemented yet. Please check the code."
-        )
+        # raise NotImplementedError(
+        #     "Chrooting into the rootfs is not implemented yet. Please check the code."
+        # )
 
 
     def copy(self):

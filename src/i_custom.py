@@ -120,7 +120,6 @@ class ImageConfig:
     name: str
     version: str
     image_path: Optional[str] = None
-    increase: Optional[str] = None
     debug: Optional[DebugConfig] = None
     apt: Optional[AptConfig] = None
     rootfs: Optional[RootfsConfig] = None
@@ -135,7 +134,6 @@ class ImageConfig:
             name: str,
             version: str,
             image_path: Optional[str] = None,
-            increase: Optional[str] = None,
             debug: Optional[dict] = None,
             apt: Optional[dict] = None,
             rootfs: Optional[dict] = None,
@@ -148,7 +146,6 @@ class ImageConfig:
         self.name = name
         self.version = version
         self.image_path = image_path
-        self.increase = increase
         self.debug = DebugConfig(**debug) if debug else None
         self.apt = AptConfig(**apt) if apt else None
         self.rootfs = RootfsConfig(**rootfs) if rootfs else None

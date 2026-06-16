@@ -3,7 +3,7 @@
 # pylint: disable=import-error
 # pylint: disable=wrong-import-order
 
-import src.i_custom as i_custom
+import src.i_custom as i_custom # pylint: disable=no-name-in-module
 # we are redefining the print to have colors
 # pylint: disable=redefined-builtin
 from torizon_templates_utils.colors import print
