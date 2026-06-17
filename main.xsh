@@ -189,7 +189,9 @@ def _main():
             root_dir=_task_image._root_dir,
             machine=config.image.machine,
             name=config.image.name,
-            version=config.image.version
+            version=config.image.version,
+            image_file=_task_image._image_file,
+            loopdev=_task_image._loopdev
         )
         _task_ostree.get_deployed_commit()
         _task_ostree.mount_virtualfs()

@@ -24,13 +24,17 @@ class TaskOstree():
         root_dir: str,
         machine: str,
         name: str,
-        version: str = "0.0.0"
+        version: str = "0.0.0",
+        image_file: str = "",
+        loopdev: str = ""
     ):
         self._boot_dir = boot_dir
         self._root_dir = root_dir
         self._machine = machine
         self._name = name
         self._version = version
+        self._image_file = image_file
+        self._loopdev = loopdev
         self._ostree_repo = f"{self._root_dir}ostree/repo"
         self._deploy_commit_hash = ""
         self._ostree_deploy = ""
@@ -124,8 +128,8 @@ class TaskOstree():
         return _commit
 
 
-    def _adjust_min_free_space(self):
-        """Dynamically lower min-free-space-percent to what the commit actually needs."""
+    def _ensure_commit_space(self):
+        """Expand the partition if needed and set core.min-free-space-percent to fit reality."""
         _result = subprocess.check_output(
             ["sudo", "du", "-sb", self._ostree_deploy],
             text=True
@@ -135,6 +139,30 @@ class TaskOstree():
         _stat = os.statvfs(self._ostree_repo)
         _total_bytes = _stat.f_blocks * _stat.f_bsize
         _free_bytes = _stat.f_bavail * _stat.f_bsize
+
+        if _free_bytes < _deploy_bytes:
+            if not self._image_file or not self._loopdev:
+                Error_Out(
+                    "Not enough space to commit and no image_file/loopdev set for expansion.",
+                    Error.EINVAL
+                )
+
+            _expand_bytes = int((_deploy_bytes - _free_bytes) * 1.1)
+            print(
+                f"📏  Not enough space - expanding partition by {_expand_bytes // (1024*1024)} MB ...", # pylint: disable=line-too-long
+                color=Color.BLACK,
+                bg_color=BgColor.YELLOW
+            )
+
+            qemu-img resize -f raw @(self._image_file) +@(_expand_bytes)B
+            sudo losetup -c /dev/@(self._loopdev)
+            sudo parted -s @(self._image_file) resizepart 2 100%
+            sudo resize2fs /dev/mapper/@(self._loopdev)p2
+
+            # Re-read stats after expansion
+            _stat = os.statvfs(self._ostree_repo)
+            _total_bytes = _stat.f_blocks * _stat.f_bsize
+            _free_bytes = _stat.f_bavail * _stat.f_bsize
 
         _free_after = max(0, _free_bytes - _deploy_bytes)
         _free_pct_after = int(_free_after * 100 // _total_bytes) if _total_bytes > 0 else 0
@@ -158,7 +186,7 @@ class TaskOstree():
         print("📦  Committing changes to ostree repo...", color=Color.BLACK, bg_color=BgColor.BLUE)
         print("please wait...")
 
-        self._adjust_min_free_space()
+        self._ensure_commit_space()
 
         sudo ostree \
             --repo=@(self._ostree_repo) \

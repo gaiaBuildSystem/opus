@@ -70,11 +70,22 @@ class TaskOstree():
     _deploy_commit_hash: str
     _mounted: bool
 
-    def __init__(self, boot_dir: str, root_dir: str, machine: str, name: str, version: str):
+    def __init__(
+        self,
+        boot_dir: str,
+        root_dir: str,
+        machine: str,
+        name: str,
+        version: str,
+        image_file: str = "",
+        loopdev: str = ""
+    ):
         self._boot_dir = boot_dir
         self._root_dir = root_dir
         self._machine = machine
         self._name = name
+        self._image_file = image_file
+        self._loopdev = loopdev
         self._ostree_repo = f"{self._root_dir}ostree/repo"
         self._deploy_commit_hash = ""
         self._ostree_deploy = ""
